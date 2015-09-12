@@ -27,8 +27,9 @@ JNIEXPORT jstring JNICALL Java_com_example_android_1ndk_1example_NDKMethods_set_
 
 	dev = pcap_lookupdev(errbuf);
 
-	if (dev == NULL){
-		__android_log_print(ANDROID_LOG_DEBUG, DEBUG_TAG, "errbuf: [%s]", errbuf);
+	if (dev == NULL) {
+		__android_log_print(ANDROID_LOG_DEBUG, DEBUG_TAG, "errbuf: [%s]",
+				errbuf);
 		exit(1);
 	}
 	__android_log_print(ANDROID_LOG_DEBUG, DEBUG_TAG, "Device: [%s]", dev);
