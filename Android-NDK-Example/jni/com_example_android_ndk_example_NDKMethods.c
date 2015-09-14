@@ -1,7 +1,7 @@
 /* Header for class com_example_android_ndk_example_NDKMethods*/
 #include "com_example_android_ndk_example_NDKMethods.h"
 
-#define DEBUG_TAG "Sample_LIBPCAP_DEBUGGING"
+#define DEBUG_TAG "\nLIBPCAP_DEBUGGING =============> "
 
 /*
  * Class:     com_example_android_ndk_example_NDKMethods
@@ -33,6 +33,34 @@ JNIEXPORT jstring JNICALL Java_com_example_android_1ndk_1example_NDKMethods_set_
 		exit(1);
 	}
 	__android_log_print(ANDROID_LOG_DEBUG, DEBUG_TAG, "Device: [%s]", dev);
+
+	ret = pcap_lookupnet(dev, &netp, &maskp, errbuf);
+
+	if (ret == -1) {
+		__android_log_print(ANDROID_LOG_DEBUG, DEBUG_TAG, "errbuf: [%s]",
+				errbuf);
+		exit(1);
+	}
+
+	/* get the network address in a human readable form */
+	addr.s_addr = netp;
+	net = inet_ntoa(addr);
+	if (net == NULL) {
+		__android_log_print(ANDROID_LOG_DEBUG, DEBUG_TAG, "errbuf: [%s]",
+				"inet_ntoa failed");
+		exit(1);
+	}
+	__android_log_print(ANDROID_LOG_DEBUG, DEBUG_TAG, "Net status: [%s]", net);
+
+	addr.s_addr = maskp;
+	mask = inet_ntoa(addr);
+	if (mask == NULL) {
+		__android_log_print(ANDROID_LOG_DEBUG, DEBUG_TAG, "errbuf: [%s]",
+				"inet_ntoa failed");
+		exit(1);
+	}
+
+	__android_log_print(ANDROID_LOG_DEBUG, DEBUG_TAG, "MASK: [%s]", mask);
 
 	return (*env)->NewStringUTF(env, str);
 }

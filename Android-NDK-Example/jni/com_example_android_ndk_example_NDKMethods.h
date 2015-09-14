@@ -1,4 +1,6 @@
 /* Header for class com_example_android_ndk_example_NDKMethods */
+#undef __cplusplus
+
 #include <jni.h>
 #include <android/log.h>
 
