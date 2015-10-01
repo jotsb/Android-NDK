@@ -5,14 +5,61 @@
 
 int main() {
 
-/* Can they run this? */
-/*if (geteuid() != 0) {
- __android_log_print(ANDROID_LOG_DEBUG, DEBUG_TAG, "errbuf: [%s]",
- "\nYou need to be root to run this.\n\n");
- exit(0);
- }*/
+	char *dev; /* name of the device to use */
+	char *net; /* dot notation of the network address */
+	char *mask;/* dot notation of the network mask    */
+	char errbuf[PCAP_ERRBUF_SIZE];
 
-return 0;
+	int ret; /* return code */
+
+	bpf_u_int32 netp; /* ip          */
+	bpf_u_int32 maskp;/* subnet mask */
+
+	struct in_addr addr;
+
+	//const char *str = (*env)->GetStringUTFChars(env, javaString, NULL);
+
+	setuid(0);
+	setgid(0);
+
+	dev = pcap_lookupdev(errbuf);
+
+	if (dev == NULL) {
+		__android_log_print(ANDROID_LOG_DEBUG, DEBUG_TAG, "errbuf: [%s]",
+				errbuf);
+		exit(1);
+	}
+	__android_log_print(ANDROID_LOG_DEBUG, DEBUG_TAG, "Device: [%s]", dev);
+
+	ret = pcap_lookupnet(dev, &netp, &maskp, errbuf);
+
+	if (ret == -1) {
+		__android_log_print(ANDROID_LOG_DEBUG, DEBUG_TAG, "errbuf: [%s]",
+				errbuf);
+		exit(1);
+	}
+
+	/* get the network address in a human readable form */
+	addr.s_addr = netp;
+	net = inet_ntoa(addr);
+	if (net == NULL) {
+		__android_log_print(ANDROID_LOG_DEBUG, DEBUG_TAG, "errbuf: [%s]",
+				"inet_ntoa failed");
+		exit(1);
+	}
+	__android_log_print(ANDROID_LOG_DEBUG, DEBUG_TAG, "Net status: [%s]", net);
+
+	addr.s_addr = maskp;
+	mask = inet_ntoa(addr);
+	if (mask == NULL) {
+		__android_log_print(ANDROID_LOG_DEBUG, DEBUG_TAG, "errbuf: [%s]",
+				"inet_ntoa failed");
+		exit(1);
+	}
+
+	__android_log_print(ANDROID_LOG_DEBUG, DEBUG_TAG, "MASK: [%s]", mask);
+
+	return 0;
 }
 
 /*
