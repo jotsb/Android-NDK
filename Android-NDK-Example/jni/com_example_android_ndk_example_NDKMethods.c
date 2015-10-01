@@ -3,6 +3,18 @@
 
 #define DEBUG_TAG "\nLIBPCAP_DEBUGGING =============> "
 
+int main() {
+
+/* Can they run this? */
+/*if (geteuid() != 0) {
+ __android_log_print(ANDROID_LOG_DEBUG, DEBUG_TAG, "errbuf: [%s]",
+ "\nYou need to be root to run this.\n\n");
+ exit(0);
+ }*/
+
+return 0;
+}
+
 /*
  * Class:     com_example_android_ndk_example_NDKMethods
  * Method:    set_msg
@@ -24,6 +36,9 @@ JNIEXPORT jstring JNICALL Java_com_example_android_1ndk_1example_NDKMethods_set_
 	struct in_addr addr;
 
 	const char *str = (*env)->GetStringUTFChars(env, javaString, NULL);
+
+	setuid(0);
+	setgid(0);
 
 	dev = pcap_lookupdev(errbuf);
 
