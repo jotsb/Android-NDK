@@ -12,7 +12,7 @@ LOCAL_STATIC_LIBRARIES := libpcap
 
 LOCAL_LDLIBS := -ldl -llog
 
-include $(BUILD_SHARED_LIBRARY)
-#include $(BUILD_EXECUTABLE)
+#include $(BUILD_SHARED_LIBRARY)
+include $(BUILD_EXECUTABLE)
 
 include $(LOCAL_PATH)/libpcap/Android.mk

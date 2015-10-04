@@ -1,9 +1,58 @@
 package com.example.android_ndk_example;
 
-public class NDKMethods {
-	/*public native static String set_msg(String text);
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.IOException;
 
-	static {
-		System.loadLibrary("com_example_android_ndk_example_NDKMethods");
-	}*/
+import android.util.Log;
+
+public class NDKMethods {
+
+	public static String start_capture() {
+
+		String location = null;
+		String curUid = null;
+		java.lang.Process p;
+
+		try {
+			/* Open ROOT Shell */
+			p = Runtime.getRuntime().exec("su");
+			/* Get Output Stream from the Shell */
+			DataOutputStream os = new DataOutputStream(p.getOutputStream());
+			/* Get InputStream to the Shell */
+			DataInputStream is = new DataInputStream(p.getInputStream());
+
+			if (os != null && is != null) {
+				/* Request Shell's ID */
+				os.writeBytes("id\n");
+				os.flush();
+
+				/* Read the response for the "id" command above */
+				curUid = is.readUTF().toString();
+				if (curUid == null) { /* Request failed */
+					Log.d("NDK Method", "Can't get root access or denied by user");
+				} else if (curUid
+						.contains("uid=0") == true) { /* Root access Granted */
+					os.writeBytes("pwd\n");
+					os.flush();
+
+					location = is.readUTF().toString();
+					Log.d("NDKMethod", "Root Access Granted");
+				} else { /* Root access Rejected */
+					Log.d("NDKMethod", "Root access Rejected: " + curUid);
+				}
+			}
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+
+		return curUid;
+	}
+	/*
+	 * public native static String set_msg(String text);
+	 * 
+	 * static {
+	 * System.loadLibrary("com_example_android_ndk_example_NDKMethods"); }
+	 */
 }

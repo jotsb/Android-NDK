@@ -42,6 +42,8 @@ extern "C" {
 JNIEXPORT jstring JNICALL ava_com_example_android_1ndk_1example_NDKMethods_set_1msg
   (JNIEnv *, jclass, jstring);
 
+int log(char *msgType, char *string);
+
 #ifdef __cplusplus
 }
 #endif

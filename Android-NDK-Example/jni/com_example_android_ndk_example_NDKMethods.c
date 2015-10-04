@@ -25,17 +25,15 @@ int main() {
 	dev = pcap_lookupdev(errbuf);
 
 	if (dev == NULL) {
-		__android_log_print(ANDROID_LOG_DEBUG, DEBUG_TAG, "errbuf: [%s]",
-				errbuf);
+		log("errbuf: [%s]", errbuf);
 		exit(1);
 	}
-	__android_log_print(ANDROID_LOG_DEBUG, DEBUG_TAG, "Device: [%s]", dev);
+	log("Device: [%s]", dev);
 
 	ret = pcap_lookupnet(dev, &netp, &maskp, errbuf);
 
 	if (ret == -1) {
-		__android_log_print(ANDROID_LOG_DEBUG, DEBUG_TAG, "errbuf: [%s]",
-				errbuf);
+		log("errbuf: [%s]", errbuf);
 		exit(1);
 	}
 
@@ -43,86 +41,25 @@ int main() {
 	addr.s_addr = netp;
 	net = inet_ntoa(addr);
 	if (net == NULL) {
-		__android_log_print(ANDROID_LOG_DEBUG, DEBUG_TAG, "errbuf: [%s]",
-				"inet_ntoa failed");
+		log("errbuf: [%s]", "inet_ntoa failed");
 		exit(1);
 	}
-	__android_log_print(ANDROID_LOG_DEBUG, DEBUG_TAG, "Net status: [%s]", net);
+	log("Net status: [%s]", net);
 
 	addr.s_addr = maskp;
 	mask = inet_ntoa(addr);
 	if (mask == NULL) {
-		__android_log_print(ANDROID_LOG_DEBUG, DEBUG_TAG, "errbuf: [%s]",
-				"inet_ntoa failed");
+		log("errbuf: [%s]", "inet_ntoa failed");
 		exit(1);
 	}
 
-	__android_log_print(ANDROID_LOG_DEBUG, DEBUG_TAG, "MASK: [%s]", mask);
+	log("MASK: [%s]", mask);
 
 	return 0;
 }
 
-/*
- * Class:     com_example_android_ndk_example_NDKMethods
- * Method:    set_msg
- * Signature: (Ljava/lang/String;)Ljava/lang/String;
- */
-JNIEXPORT jstring JNICALL Java_com_example_android_1ndk_1example_NDKMethods_set_1msg(
-		JNIEnv *env, jclass class, jstring javaString) {
 
-	char *dev; /* name of the device to use */
-	char *net; /* dot notation of the network address */
-	char *mask;/* dot notation of the network mask    */
-	char errbuf[PCAP_ERRBUF_SIZE];
-
-	int ret; /* return code */
-
-	bpf_u_int32 netp; /* ip          */
-	bpf_u_int32 maskp;/* subnet mask */
-
-	struct in_addr addr;
-
-	const char *str = (*env)->GetStringUTFChars(env, javaString, NULL);
-
-	setuid(0);
-	setgid(0);
-
-	dev = pcap_lookupdev(errbuf);
-
-	if (dev == NULL) {
-		__android_log_print(ANDROID_LOG_DEBUG, DEBUG_TAG, "errbuf: [%s]",
-				errbuf);
-		exit(1);
-	}
-	__android_log_print(ANDROID_LOG_DEBUG, DEBUG_TAG, "Device: [%s]", dev);
-
-	ret = pcap_lookupnet(dev, &netp, &maskp, errbuf);
-
-	if (ret == -1) {
-		__android_log_print(ANDROID_LOG_DEBUG, DEBUG_TAG, "errbuf: [%s]",
-				errbuf);
-		exit(1);
-	}
-
-	/* get the network address in a human readable form */
-	addr.s_addr = netp;
-	net = inet_ntoa(addr);
-	if (net == NULL) {
-		__android_log_print(ANDROID_LOG_DEBUG, DEBUG_TAG, "errbuf: [%s]",
-				"inet_ntoa failed");
-		exit(1);
-	}
-	__android_log_print(ANDROID_LOG_DEBUG, DEBUG_TAG, "Net status: [%s]", net);
-
-	addr.s_addr = maskp;
-	mask = inet_ntoa(addr);
-	if (mask == NULL) {
-		__android_log_print(ANDROID_LOG_DEBUG, DEBUG_TAG, "errbuf: [%s]",
-				"inet_ntoa failed");
-		exit(1);
-	}
-
-	__android_log_print(ANDROID_LOG_DEBUG, DEBUG_TAG, "MASK: [%s]", mask);
-
-	return (*env)->NewStringUTF(env, str);
+int log(char *msgType, char *string) {
+	__android_log_print(ANDROID_LOG_DEBUG, DEBUG_TAG, msgType, string);
+	return 0;
 }
