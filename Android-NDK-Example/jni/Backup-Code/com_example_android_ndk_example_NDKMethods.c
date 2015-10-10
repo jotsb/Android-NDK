@@ -25,15 +25,15 @@ int main() {
 	dev = pcap_lookupdev(errbuf);
 
 	if (dev == NULL) {
-		log("errbuf: [%s]", errbuf);
+		submit_log("errbuf: [%s]", errbuf);
 		exit(1);
 	}
-	log("Device: [%s]", dev);
+	submit_log("Device: [%s]", dev);
 
 	ret = pcap_lookupnet(dev, &netp, &maskp, errbuf);
 
 	if (ret == -1) {
-		log("errbuf: [%s]", errbuf);
+		submit_log("errbuf: [%s]", errbuf);
 		exit(1);
 	}
 
@@ -41,25 +41,24 @@ int main() {
 	addr.s_addr = netp;
 	net = inet_ntoa(addr);
 	if (net == NULL) {
-		log("errbuf: [%s]", "inet_ntoa failed");
+		submit_log("errbuf: [%s]", "inet_ntoa failed");
 		exit(1);
 	}
-	log("Net status: [%s]", net);
+	submit_log("Net status: [%s]", net);
 
 	addr.s_addr = maskp;
 	mask = inet_ntoa(addr);
 	if (mask == NULL) {
-		log("errbuf: [%s]", "inet_ntoa failed");
+		submit_log("errbuf: [%s]", "inet_ntoa failed");
 		exit(1);
 	}
 
-	log("MASK: [%s]", mask);
+	submit_log("MASK: [%s]", mask);
 
 	return 0;
 }
 
-
-int log(char *msgType, char *string) {
+int submit_log(char *msgType, char *string) {
 	__android_log_print(ANDROID_LOG_DEBUG, DEBUG_TAG, msgType, string);
 	return 0;
 }

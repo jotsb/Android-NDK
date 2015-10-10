@@ -15,10 +15,10 @@ public class MainActivity extends Activity {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_main);
 		String ndkMessage = NDKMethods.start_capture();
-		//String ndkMessage = NDKMethods.set_msg("testing");
+//		String ndkMessage = NDKMethods.set_msg("testing");
 		TextView txtview = (TextView) this.findViewById(R.id.textView1);
 		txtview.setText(ndkMessage);
-		//Toast.makeText(getApplicationContext(), ndkMessage, Toast.LENGTH_LONG).show();
+		Toast.makeText(getApplicationContext(), ndkMessage, Toast.LENGTH_LONG).show();
 
 	}
 

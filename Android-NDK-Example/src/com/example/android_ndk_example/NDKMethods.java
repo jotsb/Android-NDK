@@ -10,7 +10,7 @@ public class NDKMethods {
 
 	public static String start_capture() {
 
-		String location = null;
+		// String location = null;
 		String curUid = null;
 		java.lang.Process p;
 
@@ -33,10 +33,9 @@ public class NDKMethods {
 					Log.d("NDK Method", "Can't get root access or denied by user");
 				} else if (curUid
 						.contains("uid=0") == true) { /* Root access Granted */
-					os.writeBytes("pwd\n");
-					os.flush();
 
-					location = is.readUTF().toString();
+					os.writeBytes("chmod -R 777 /data/data/com.example.android_ndk_example\n");
+
 					Log.d("NDKMethod", "Root Access Granted");
 				} else { /* Root access Rejected */
 					Log.d("NDKMethod", "Root access Rejected: " + curUid);
@@ -49,10 +48,11 @@ public class NDKMethods {
 
 		return curUid;
 	}
-	/*
-	 * public native static String set_msg(String text);
-	 * 
-	 * static {
-	 * System.loadLibrary("com_example_android_ndk_example_NDKMethods"); }
-	 */
+
+	// public native static String set_msg(String text);
+	//
+	// static {
+	// System.loadLibrary("com_example_android_ndk_example_NDKMethods");
+	// }
+
 }
