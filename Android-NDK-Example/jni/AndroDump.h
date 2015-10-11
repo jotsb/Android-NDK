@@ -1,11 +1,12 @@
 /* Header for class com_example_android_ndk_example_NDKMethods */
 #undef __cplusplus
-
+#undef _GNU_SOURCE
 #include <jni.h>
 #include <android/log.h>
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <stddef.h>
 #include <string.h>
 #include <ctype.h>
 #include <unistd.h>
@@ -27,6 +28,10 @@
 
 
 #include <pcap.h>
+
+#ifndef NULL
+#define NULL   ((void *) 0)
+#endif
 
 
 #ifndef _Included_AndroDump
