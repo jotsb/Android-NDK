@@ -1,7 +1,12 @@
 package com.example.android_ndk_example;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+
 import android.app.Activity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.TextView;
@@ -9,17 +14,27 @@ import android.widget.Toast;
 
 public class MainActivity extends Activity {
 
-	
+	private String SYSTEM_ARCHITECTURE;
+
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_main);
-		String ndkMessage = NDKMethods.start_capture();
-//		String ndkMessage = NDKMethods.set_msg("testing");
-		TextView txtview = (TextView) this.findViewById(R.id.textView1);
-		txtview.setText(ndkMessage);
-		Toast.makeText(getApplicationContext(), ndkMessage, Toast.LENGTH_LONG).show();
 
+		this.SYSTEM_ARCHITECTURE = this.getCPUArch();
+
+		// String ndkMessage = NDKMethods.start_capture();
+		// String ndkMessage = NDKMethods.set_msg("testing");
+		// TextView txtview = (TextView) this.findViewById(R.id.textView1);
+		// txtview.setText(ndkMessage);
+		// Toast.makeText(getApplicationContext(), ndkMessage,
+		// Toast.LENGTH_LONG).show();
+
+	}
+
+	public String getCPUArch() {
+		String arch = android.os.Build.CPU_ABI;
+		return arch;
 	}
 
 	@Override
