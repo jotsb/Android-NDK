@@ -1,5 +1,11 @@
 #!/bin/bash
 
+#
+# This Script is used to build NDK, move the NDK executables to res/raw/ndk directory and then run ANT to build the Android 
+# Executable file
+#
+
+
 #VARIABLES
 LINE="==================================="
 SCRIPT="[build.sh]"
