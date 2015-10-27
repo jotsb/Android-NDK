@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 
 import android.app.Activity;
+import android.content.res.AssetManager;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
@@ -22,6 +23,10 @@ public class MainActivity extends Activity {
 		setContentView(R.layout.activity_main);
 
 		this.SYSTEM_ARCHITECTURE = this.getCPUArch();
+		Toast.makeText(getApplicationContext(), this.SYSTEM_ARCHITECTURE, Toast.LENGTH_LONG).show();
+		
+		TextView txtview = (TextView) this.findViewById(R.id.textView1);
+		txtview.setText(getAssetsFiles());
 
 		// String ndkMessage = NDKMethods.start_capture();
 		// String ndkMessage = NDKMethods.set_msg("testing");
@@ -30,6 +35,28 @@ public class MainActivity extends Activity {
 		// Toast.makeText(getApplicationContext(), ndkMessage,
 		// Toast.LENGTH_LONG).show();
 
+	}
+	
+	public String getAssetsFiles() {
+		String assets = "";
+		String[] files = null;
+		AssetManager assetManager = getAssets();
+		
+		try {
+			files = assetManager.list("");
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			Log.e("ANDROID_NDK", "Failed to get asset files list.", e);
+			// e.printStackTrace();
+		}
+		
+		if (files != null) {
+			for (String filename : files) {
+				assets += filename + " ";
+			}
+		}
+		
+		return assets;
 	}
 
 	public String getCPUArch() {

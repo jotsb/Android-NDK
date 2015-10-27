@@ -4,26 +4,32 @@
 # This Script is used to build NDK, move the NDK executables to res/raw/ndk directory and then run ANT to build the Android 
 # Executable file
 #
+# Execute:  ./build.sh          (this will default to Debug Mode
+#           ./build.sh debug    (this will also build the project in Debug Mode
+#           ./build.sh release  (this will build project in Release Mode
+#
 
 
 #VARIABLES
 LINE="==================================="
 SCRIPT="[build.sh]"
-NDK="/home/jb/Documents/Android/NDK/ndk/ndk-build"
 SLEEP=1
+VAR=${1}
 
 #COMMANDS
 clear
 
+echo "$LINE"
 echo "$SCRIPT CLEANING NDK PACKAGE"
 echo "$LINE"
 echo "$SCRIPT ndk-build clean"
 echo
-$NDK clean
+ndk-build clean
 echo
 echo
 sleep $SLEEP
 
+echo "$LINE"
 echo "$SCRIPT CLEANING ANDROID PROJECT"
 echo "$LINE"
 echo "$SCRIPT ant clean"
@@ -33,46 +39,45 @@ echo
 echo
 sleep $SLEEP
 
+echo "$LINE"
 echo "$SCRIPT BUILDING NDK PACKAGE"
 echo "$LINE"
 echo "$SCRIPT ndk-build"
 echo
-$NDK
+ndk-build
 echo
 echo
 sleep $SLEEP
 
+echo "$LINE"
 echo "$SCRIPT MOVING THE EXECUTABLES"
 echo "$LINE"
+echo "rm -fr ./assets/*"
+rm -fr ./assets/*
 echo "$SCRIPT cd ./libs"
 cd ./libs
-echo "$SCRIPT rm -f archived.zip"
-rm -f archived.zip
-echo "$SCRIPT zip -r archived ./arm64-v8a ./armeabi ./armeabi-v7a ./mips ./mips64 ./x86 ./x86_64"
-zip -r archived ./arm64-v8a ./armeabi ./armeabi-v7a ./mips ./mips64 ./x86 ./x86_64
-echo "$SCRIPT cp -v archived.zip ../res/raw/ndk/." 
-cp -v archived.zip ../res/ndk/exe/.
+echo "$SCRIPT cp -r ./arm64-v8a ./armeabi ./armeabi-v7a ./mips ./mips64 ./x86 ./x86_64 ../assets"
+cp -r ./arm64-v8a ./armeabi ./armeabi-v7a ./mips ./mips64 ./x86 ./x86_64 ../assets
 cd ../
 echo
 echo
 sleep $SLEEP
 
-echo "$SCRIPT BUILDING ANDROID PROJECT"
 echo "$LINE"
-read -r -p "$SCRIPT Are you sure you want to build in RELEASE mode? [y/N] " response
-case $response in
-    [yY][eE][sS]|[yY]) 
-        echo "$SCRIPT ant release"
-        ant release
-        ;;
-    *)
-        echo "$SCRIPT ant debug"
-        ant debug
-        ;;
-esac
+echo "$SCRIPT BUILDING ANDROID PROJECT IN [ $VAR ] MODE"
+echo "$LINE"
+if [ -z ${var+x} ]; then 
+    echo "$SCRIPT ant debug" 
+    ant debug
+else  
+    echo "$SCRIPT ant $VAR"  
+    ant "$VAR"
+fi
 echo
 echo
 
+echo "$LINE"
 echo "$SCRIPT BUIDLING COMPLETE"
 echo "$LINE"
 echo "$SCRIPT [INFO] RUN ./install.sh TO INSTALL THE PROJECT ON THE DEVICE"
+echo "$LINE$LINE"
