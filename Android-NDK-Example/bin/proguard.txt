@@ -1,3 +1,0 @@
-# view AndroidManifest.xml #generated:18
--keep class com.example.android_ndk_example.MainActivity { <init>(...); }
-
