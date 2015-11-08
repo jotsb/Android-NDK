@@ -42,30 +42,30 @@ sleep $SLEEP
 
 
 echo "$LINE"
-echo "$FILE UNINSTALLING com.example.android_security_suite APPLICATION"
+echo "$FILE UNINSTALLING com.ndk.android_security_suite APPLICATION"
 echo "$LINE"
-echo "$FILE adb uninstall com.example.android_security_suite"
-adb uninstall com.example.android_security_suite
+echo "$FILE adb uninstall com.ndk.android_security_suite"
+adb uninstall com.ndk.android_security_suite
 echo "$FILE UNINSTALL COMPLETE"
 echo
 sleep $SLEEP
 
 
 echo "$LINE"
-echo "$FILE INSTALLING AndroidNDK-debug.apk"
+echo "$FILE INSTALLING Android-Security-Suite-debug.apk"
 echo "$LINE"
-echo "$FILE adb -d install -r ./bin/AndroidNDK-debug.apk"
-adb -d install -r ./bin/AndroidNDK-debug.apk
+echo "$FILE adb -d install -r ./bin/Android-Security-Suite-debug.apk"
+adb -d install -r ./bin/Android-Security-Suite-debug.apk
 echo "$FILE INSTALLATION COMPLETE"
 echo
 sleep $SLEEP
 
 
 echo "$LINE"
-echo "$FILE RUNNING AndroidNDK APPLICATION"
+echo "$FILE RUNNING Android Security Suite APPLICATION"
 echo "$LINE"
-echo "$FILE adb shell am start -a android.intent.action.Main -n com.example.android_security_suite/.MainActivity"
-adb shell am start -a android.intent.action.Main -n com.example.android_security_suite/.MainActivity
+echo "$FILE adb shell am start -a android.intent.action.Main -n com.ndk.android_security_suite/.MainActivity"
+adb shell am start -a android.intent.action.Main -n com.ndk.android_security_suite/.MainActivity
 echo "$FILE APPLICATION RUNNING"
 echo
 echo
