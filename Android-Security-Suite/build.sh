@@ -9,7 +9,7 @@
 
 
 #VARIABLES
-LINE="==================================="
+LINE="================================================="
 SCRIPT="[build.sh]"
 EP=1
 VAR=${1}
@@ -57,5 +57,6 @@ echo "$SCRIPT BUIDLING COMPLETE"
 echo "$LINE"
 echo "$SCRIPT [INFO] RUN ./install.sh [debug/release] TO INSTALL THE PROJECT ON THE DEVICE"
 echo "$LINE$LINE$LINE"
+echo "************************************************************************************************************************"
 echo
-echo
+sleep $SLEEP

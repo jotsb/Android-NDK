@@ -12,10 +12,8 @@
         android:id="@+id/textView1"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignParentLeft="true"
         android:layout_alignParentTop="true"
-        android:layout_marginLeft="26dp"
-        android:layout_marginTop="26dp"
-        android:text="TextView" />
+        android:layout_centerHorizontal="true"
+        android:text="ANDROID SECURITY SUITE" />
 
 </RelativeLayout>

@@ -8,7 +8,7 @@
 
 
 FILE="[install.sh]"
-LINE="======================================================================"
+LINE="==================================================================================="
 VAR=${1}
 SLEEP=1
 
@@ -66,6 +66,8 @@ echo "$FILE RUNNING Android Security Suite APPLICATION"
 echo "$LINE"
 echo "$FILE adb shell am start -a android.intent.action.Main -n com.ndk.android_security_suite/.MainActivity"
 adb shell am start -a android.intent.action.Main -n com.ndk.android_security_suite/.MainActivity
+echo "$LINE"
 echo "$FILE APPLICATION RUNNING"
+echo "$LINE"
 echo
 echo
