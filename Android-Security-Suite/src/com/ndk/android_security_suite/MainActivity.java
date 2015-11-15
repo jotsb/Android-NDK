@@ -45,7 +45,7 @@ public class MainActivity extends Activity {
 			Log.d(this.LOG_TAG + "MainActivity.onCreate()", "Executable File not found in the Sdcard.");
 		} else {
 			Toast.makeText(getApplicationContext(), exePath, Toast.LENGTH_SHORT).show();
-			moveToBin(exePath);
+			moveToBin(exePath, "AndroDump");
 		}
 	}
 
@@ -154,7 +154,7 @@ public class MainActivity extends Activity {
 			File fileDir = new File(getExternalFilesDir(null), "");
 			for (File f : fileDir.listFiles()) {
 				if (f.getName().equalsIgnoreCase("AndroDump")) {
-					fileLocation += f.getAbsolutePath();
+					fileLocation = f.getAbsolutePath();
 					break;
 				}
 			}
@@ -165,7 +165,7 @@ public class MainActivity extends Activity {
 		return fileLocation;
 	}
 
-	public void moveToBin(String filePath) {
+	public void moveToBin(String filePath, String fileName) {
 		boolean exitSu = false;
 		java.lang.Process suProcess;
 
@@ -187,22 +187,47 @@ public class MainActivity extends Activity {
 					Log.e(this.LOG_TAG + "moveToBin()", "Can't get root access or denied by user");
 				} else if (curUid.contains("uid=0") == true) {
 					Log.e(this.LOG_TAG + "moveToBin()", "Root Acess Granted: " + curUid);
+
+					/*os.writeBytes("chown -v root " + filePath);
+					os.flush();
+					os.writeBytes(filePath);*/
 					
+					os.writeBytes("mkdir /data/app/android_security_suite\n");
+					os.flush();
+					os.writeBytes("mv -v " + filePath + " /system/bin/. \n");
+					os.flush();
+
+					if (osRes.readUTF().toString().contains("system")) {
+						Log.d(this.LOG_TAG + "moveToBin()", "Executable moved to /system/bin directory");
+						os.writeBytes("chown -v root /system/bin/" + fileName + "\n");
+						os.flush();
+						if (osRes.readUTF().toString().contains("changed ownership")) {
+							Log.d(this.LOG_TAG + "moveToBin()", "root permissions granted.");
+						}
+					}
+
 					exitSu = true;
 					// Copy files from Sdcard to /system/bin directory
 				} else {
 					Log.e(this.LOG_TAG + "moveToBin()", "Root Access Rejected: " + curUid);
 				}
-				
+
 				if (exitSu) {
 					os.writeBytes("exit\n");
 					os.flush();
 					Log.e(this.LOG_TAG + "moveToBin()", "SU Shell Terminated: " + curUid);
 				}
-				
+
 			}
 		} catch (Exception e) {
 			Log.e(this.LOG_TAG + "moveToBin()", "Unable to move the file", e);
 		}
 	}
+	
+	public final boolean execute() {
+		boolean retVal = false;
+		
+		return retVal;
+	}
+
 }
