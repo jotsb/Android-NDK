@@ -36,17 +36,28 @@ public class MainActivity extends Activity {
 
 		this.SYSTEM_ARCHITECTURE = Support.getCPUArch();
 		Toast.makeText(getApplicationContext(), this.SYSTEM_ARCHITECTURE, Toast.LENGTH_SHORT).show();
-		getAssetsFiles(this.SYSTEM_ARCHITECTURE, "AndroDump");
 
-		exePath = getSdcardFiles();
-		textView.setText(exePath);
-		if (exePath.isEmpty()) {
-			textView.setText("File Not Found");
-			Log.d(this.LOG_TAG + "MainActivity.onCreate()", "Executable File not found in the Sdcard.");
-		} else {
-			Toast.makeText(getApplicationContext(), exePath, Toast.LENGTH_SHORT).show();
-			moveToBin(exePath, "AndroDump");
+		AssetManager a = getAssets();
+		try {
+			String[] asset = a.list(this.SYSTEM_ARCHITECTURE);
+			for (String f : asset) {
+				textView.setText(f + " ");
+			}
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		}
+
+		/*
+		 * getAssetsFiles(this.SYSTEM_ARCHITECTURE, "AndroDump");
+		 * 
+		 * exePath = getSdcardFiles(); textView.setText(exePath); if
+		 * (exePath.isEmpty()) { textView.setText("File Not Found");
+		 * Log.d(this.LOG_TAG + "MainActivity.onCreate()",
+		 * "Executable File not found in the Sdcard."); } else {
+		 * Toast.makeText(getApplicationContext(), exePath,
+		 * Toast.LENGTH_SHORT).show(); moveToBin(exePath, "AndroDump"); }
+		 */
 	}
 
 	@Override
@@ -188,10 +199,11 @@ public class MainActivity extends Activity {
 				} else if (curUid.contains("uid=0") == true) {
 					Log.e(this.LOG_TAG + "moveToBin()", "Root Acess Granted: " + curUid);
 
-					/*os.writeBytes("chown -v root " + filePath);
-					os.flush();
-					os.writeBytes(filePath);*/
-					
+					/*
+					 * os.writeBytes("chown -v root " + filePath); os.flush();
+					 * os.writeBytes(filePath);
+					 */
+
 					os.writeBytes("mkdir /data/app/android_security_suite\n");
 					os.flush();
 					os.writeBytes("mv -v " + filePath + " /system/bin/. \n");
@@ -223,10 +235,10 @@ public class MainActivity extends Activity {
 			Log.e(this.LOG_TAG + "moveToBin()", "Unable to move the file", e);
 		}
 	}
-	
+
 	public final boolean execute() {
 		boolean retVal = false;
-		
+
 		return retVal;
 	}
 

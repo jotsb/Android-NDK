@@ -1,6 +1,7 @@
 /home/jb/Documents/Android/Workspace/Android-NDK/Android-Security-Suite/bin/classes.dex : \
 /home/jb/Documents/Android/Workspace/Android-NDK/Android-Security-Suite/bin/classes/com/ndk/android_security_suite/MainActivity.class \
 /home/jb/Documents/Android/Workspace/Android-NDK/Android-Security-Suite/bin/classes/com/ndk/android_security_suite/support/Support.class \
+/home/jb/Documents/Android/Workspace/Android-NDK/Android-Security-Suite/bin/classes/com/ndk/android_security_suite/RootAccess.class \
 /home/jb/Documents/Android/Workspace/Android-NDK/Android-Security-Suite/bin/classes/com/ndk/android_security_suite/R$style.class \
 /home/jb/Documents/Android/Workspace/Android-NDK/Android-Security-Suite/bin/classes/com/ndk/android_security_suite/R$dimen.class \
 /home/jb/Documents/Android/Workspace/Android-NDK/Android-Security-Suite/bin/classes/com/ndk/android_security_suite/R$attr.class \
@@ -9,6 +10,7 @@
 /home/jb/Documents/Android/Workspace/Android-NDK/Android-Security-Suite/bin/classes/com/ndk/android_security_suite/R.class \
 /home/jb/Documents/Android/Workspace/Android-NDK/Android-Security-Suite/bin/classes/com/ndk/android_security_suite/NDKMethods.class \
 /home/jb/Documents/Android/Workspace/Android-NDK/Android-Security-Suite/bin/classes/com/ndk/android_security_suite/R$string.class \
+/home/jb/Documents/Android/Workspace/Android-NDK/Android-Security-Suite/bin/classes/com/ndk/android_security_suite/InitialSetup.class \
 /home/jb/Documents/Android/Workspace/Android-NDK/Android-Security-Suite/bin/classes/com/ndk/android_security_suite/R$layout.class \
 /home/jb/Documents/Android/Workspace/Android-NDK/Android-Security-Suite/bin/classes/com/ndk/android_security_suite/R$id.class \
 /home/jb/Documents/Android/Workspace/Android-NDK/Android-Security-Suite/bin/classes/com/ndk/android_security_suite/R$menu.class \

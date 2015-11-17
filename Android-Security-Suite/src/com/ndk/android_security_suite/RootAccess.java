@@ -16,10 +16,6 @@ import java.util.ArrayList;
 import android.content.res.AssetManager;
 import android.util.Log;
 
-/**
- * @author jb
- *
- */
 public abstract class RootAccess {
 
 	private final static String LOG_TAG = "[ANDROID_SECURITY_SUITE] ===> ";
@@ -49,13 +45,13 @@ public abstract class RootAccess {
 		AssetManager assetManager = assetM;
 
 		try {
-			assets = assetManager.list("");
+			assets = assetManager.list(arch);
 
 			if (assets != null) {
 				for (String asset : assets) {
 					if (asset.equalsIgnoreCase(arch)) {
-						String filePath = arch + "/" + fileName;
-						in = assetManager.open(filePath);
+						// String filePath = arch + "/" + fileName;
+						in = assetManager.open(fileName);
 						File outFile = new File(sdCard, fileName);
 						out = new FileOutputStream(outFile);
 						retVal = copyFile(in, out);
@@ -171,23 +167,42 @@ public abstract class RootAccess {
 		return retVal;
 	}
 
-	public static boolean executeCommands() {
+	/**
+	 * Method used to run multiple Shell Commands at once.
+	 * 
+	 * @param cmd
+	 *            = takes in a list of functions in the format of ArrayList.
+	 * @return
+	 */
+	public static boolean executeCommands(ArrayList<String> cmd) {
 		boolean retVal = false;
 
 		try {
+			ArrayList<String> commands = cmd;
+			if (commands != null && commands.size() > 0) {
+				Process suProcess = Runtime.getRuntime().exec("su");
+				DataOutputStream os = new DataOutputStream(suProcess.getOutputStream());
 
+				for (String currCmd : commands) {
+					os.writeBytes(currCmd + "\n");
+					os.flush();
+				}
+				try {
+					int suProcessReturnVal = suProcess.waitFor();
+					if (suProcessReturnVal != 255) {
+						retVal = true;
+					} else {
+						retVal = false;
+					}
+				} catch (Exception e) {
+					Log.e(LOG_TAG, "Error executing root action [" + e.getClass().getName() + "]", e);
+				}
+			}
 		} catch (Exception e) {
 			Log.e(LOG_TAG, "Error Executing ROOT Commands [" + e.getClass().getName() + "] : ", e);
 		}
-
 		return retVal;
 	}
-
-	public void setShellCommands() {
-
-	}
-
-	public abstract ArrayList<String> getCommandsToExecute();
 
 	/**
 	 * Copy files from one location to another
@@ -217,4 +232,11 @@ public abstract class RootAccess {
 		return status;
 	}
 
+	/*
+	 * public void setShellCommands() {
+	 * 
+	 * }
+	 */
+
+	// public abstract ArrayList<String> getCommandsToExecute();
 }
