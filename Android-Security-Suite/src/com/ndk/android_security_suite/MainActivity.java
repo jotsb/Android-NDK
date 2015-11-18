@@ -14,7 +14,6 @@ import com.ndk.android_security_suite.support.Support;
 import android.app.Activity;
 import android.content.res.AssetManager;
 import android.os.Bundle;
-import android.os.Environment;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -37,16 +36,21 @@ public class MainActivity extends Activity {
 		this.SYSTEM_ARCHITECTURE = Support.getCPUArch();
 		Toast.makeText(getApplicationContext(), this.SYSTEM_ARCHITECTURE, Toast.LENGTH_SHORT).show();
 
-		AssetManager a = getAssets();
-		try {
-			String[] asset = a.list(this.SYSTEM_ARCHITECTURE);
+		AssetManager assetManager = getAssets();
+		File sdCard = getExternalFilesDir(null);
+		
+		InitialSetup setup = new InitialSetup(assetManager, sdCard, this.SYSTEM_ARCHITECTURE);
+		setup.executeSetup();
+
+		/*try {
+			String[] asset = assetManager.list(this.SYSTEM_ARCHITECTURE);
 			for (String f : asset) {
 				textView.setText(f + " ");
 			}
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
-		}
+		}*/
 
 		/*
 		 * getAssetsFiles(this.SYSTEM_ARCHITECTURE, "AndroDump");
