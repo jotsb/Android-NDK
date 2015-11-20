@@ -1,6 +1,3 @@
-/**
- * 
- */
 package com.ndk.android_security_suite;
 
 import java.io.DataInputStream;

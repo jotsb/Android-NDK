@@ -1,22 +1,16 @@
 package com.ndk.android_security_suite;
 
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-
-import com.ndk.android_security_suite.R;
+//import com.ndk.android_security_suite.R;
 import com.ndk.android_security_suite.support.Support;
 
+import java.io.File;
 import android.app.Activity;
+import android.content.Intent;
 import android.content.res.AssetManager;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -38,19 +32,16 @@ public class MainActivity extends Activity {
 
 		AssetManager assetManager = getAssets();
 		File sdCard = getExternalFilesDir(null);
-		
+
 		InitialSetup setup = new InitialSetup(assetManager, sdCard, this.SYSTEM_ARCHITECTURE);
 		setup.executeSetup();
 
-		/*try {
-			String[] asset = assetManager.list(this.SYSTEM_ARCHITECTURE);
-			for (String f : asset) {
-				textView.setText(f + " ");
-			}
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}*/
+		/*
+		 * try { String[] asset = assetManager.list(this.SYSTEM_ARCHITECTURE);
+		 * for (String f : asset) { textView.setText(f + " "); } } catch
+		 * (IOException e) { // TODO Auto-generated catch block
+		 * e.printStackTrace(); }
+		 */
 
 		/*
 		 * getAssetsFiles(this.SYSTEM_ARCHITECTURE, "AndroDump");
@@ -83,167 +74,102 @@ public class MainActivity extends Activity {
 		return super.onOptionsItemSelected(item);
 	}
 
-	/**
-	 * Looks for the assets files and copies a device specific executable to
-	 * SDCard.
-	 * 
-	 * @param arhc
-	 *            (architecture type)
-	 * @param filename
-	 *            (File name to look for)
-	 */
-	public void getAssetsFiles(String arhc, String filename) {
-		String[] files = null;
-		AssetManager assetManager = getAssets();
-
-		try {
-			files = assetManager.list("");
-		} catch (IOException e) {
-			Log.e(this.LOG_TAG + "getAssetsFile", "Failed to get asset files list.", e);
-		}
-
-		if (files != null) {
-			for (String file : files) {
-				if (file.equalsIgnoreCase(arhc)) {
-					InputStream in = null;
-					OutputStream out = null;
-					String filePath = arhc + "/" + filename;
-					// Toast.makeText(getApplicationContext(), filePath,
-					// Toast.LENGTH_LONG).show();
-
-					try {
-						in = assetManager.open(filePath);
-						File outFile = new File(getExternalFilesDir(null), filename);
-						out = new FileOutputStream(outFile);
-						copyFile(in, out);
-					} catch (IOException e) {
-						Log.e(this.LOG_TAG + "getAssetsFile", "Failed to copy asset file: " + filename, e);
-					} finally {
-						if (in != null) {
-							try {
-								in.close();
-							} catch (IOException e) {
-								Log.e(this.LOG_TAG + "getAssetsFile", "Failed to close the Input Stream", e);
-							}
-						}
-						if (out != null) {
-							try {
-								out.close();
-							} catch (IOException e) {
-								Log.e(this.LOG_TAG + "getAssetsFile", "Failed to close the Output Stream", e);
-							}
-						}
-					}
-				}
-			}
-		}
+	public void startAndroDumpActivity(View view) {
+		Intent intent = new Intent(this, AndroDumpActivity.class);
+		startActivity(intent);
 	}
 
 	/**
-	 * Copy files from one location to another
+	 * public void getAssetsFiles(String arhc, String filename) { String[] files
+	 * = null; AssetManager assetManager = getAssets();
 	 * 
-	 * @param in
-	 *            Input Stream
-	 * @param out
-	 *            Output Stream
-	 * @throws IOException
-	 */
-	private void copyFile(InputStream in, OutputStream out) throws IOException {
-		byte[] buffer = new byte[1024];
-		int read;
-		while ((read = in.read(buffer)) != -1) {
-			out.write(buffer, 0, read);
-		}
-	}
-
-	/**
-	 * Gets the list of files and their locations. Specifically looking for the
-	 * Executable.
+	 * try { files = assetManager.list(""); } catch (IOException e) {
+	 * Log.e(this.LOG_TAG + "getAssetsFile", "Failed to get asset files list.",
+	 * e); }
 	 * 
-	 * @return fileLocation (Returns the location of the executable file)
+	 * if (files != null) { for (String file : files) { if
+	 * (file.equalsIgnoreCase(arhc)) { InputStream in = null; OutputStream out =
+	 * null; String filePath = arhc + "/" + filename; //
+	 * Toast.makeText(getApplicationContext(), filePath, //
+	 * Toast.LENGTH_LONG).show();
+	 * 
+	 * try { in = assetManager.open(filePath); File outFile = new
+	 * File(getExternalFilesDir(null), filename); out = new
+	 * FileOutputStream(outFile); copyFile(in, out); } catch (IOException e) {
+	 * Log.e(this.LOG_TAG + "getAssetsFile", "Failed to copy asset file: " +
+	 * filename, e); } finally { if (in != null) { try { in.close(); } catch
+	 * (IOException e) { Log.e(this.LOG_TAG + "getAssetsFile",
+	 * "Failed to close the Input Stream", e); } } if (out != null) { try {
+	 * out.close(); } catch (IOException e) { Log.e(this.LOG_TAG +
+	 * "getAssetsFile", "Failed to close the Output Stream", e); } } } } } } }
+	 * 
+	 * 
+	 * private void copyFile(InputStream in, OutputStream out) throws
+	 * IOException { byte[] buffer = new byte[1024]; int read; while ((read =
+	 * in.read(buffer)) != -1) { out.write(buffer, 0, read); } }
+	 * 
+	 * 
+	 * private String getSdcardFiles() { String fileLocation = null;
+	 * 
+	 * try { File fileDir = new File(getExternalFilesDir(null), ""); for (File f
+	 * : fileDir.listFiles()) { if (f.getName().equalsIgnoreCase("AndroDump")) {
+	 * fileLocation = f.getAbsolutePath(); break; } } } catch (Exception e) {
+	 * Log.e(this.LOG_TAG + "getSdcardFiles()",
+	 * "Failed to Get the Directory Listing", e); }
+	 * 
+	 * return fileLocation; }
+	 * 
+	 * public void moveToBin(String filePath, String fileName) { boolean exitSu
+	 * = false; java.lang.Process suProcess;
+	 * 
+	 * try { // Open Root Shell suProcess = Runtime.getRuntime().exec("su");
+	 * 
+	 * // Get the Output Stream from the Shell DataOutputStream os = new
+	 * DataOutputStream(suProcess.getOutputStream()); // Get Input Stream to the
+	 * Shell DataInputStream osRes = new
+	 * DataInputStream(suProcess.getInputStream());
+	 * 
+	 * if (os != null && osRes != null) { os.writeBytes("id\n"); os.flush();
+	 * 
+	 * String curUid = osRes.readUTF().toString(); if (curUid == null) {
+	 * Log.e(this.LOG_TAG + "moveToBin()",
+	 * "Can't get root access or denied by user"); } else if
+	 * (curUid.contains("uid=0") == true) { Log.e(this.LOG_TAG + "moveToBin()",
+	 * "Root Acess Granted: " + curUid);
+	 * 
+	 * // os.writeBytes("chown -v root " + filePath); os.flush();
+	 * //os.writeBytes(filePath);
+	 *
+	 * 
+	 * os.writeBytes("mkdir /data/app/android_security_suite\n"
+	 * );os.flush();os.writeBytes("mv -v "+filePath+" /system/bin/. \n"
+	 * );os.flush();
+	 * 
+	 * if(osRes.readUTF().toString().contains("system"))
+	 * 
+	 * { Log.d(this.LOG_TAG + "moveToBin()",
+	 * "Executable moved to /system/bin directory"); os.writeBytes(
+	 * "chown -v root /system/bin/" + fileName + "\n"); os.flush(); if
+	 * (osRes.readUTF().toString().contains("changed ownership")) {
+	 * Log.d(this.LOG_TAG + "moveToBin()", "root permissions granted."); } }
+	 * 
+	 * exitSu=true; // Copy files from Sdcard to /system/bin directory
+	 * }else{Log.e(this.LOG_TAG+"moveToBin()","Root Access Rejected: "+curUid);}
+	 * 
+	 * if(exitSu){os.writeBytes("exit\n");os.flush();Log.e(this.LOG_TAG+
+	 * "moveToBin()","SU Shell Terminated: "+curUid);}
+	 * 
+	 * }}catch(
+	 * 
+	 * Exception e)
+	 * 
+	 * { Log.e(this.LOG_TAG + "moveToBin()", "Unable to move the file", e); }
+	 * 
+	 * }
+	 * 
+	 * public final boolean execute() { boolean retVal = false;
+	 * 
+	 * return retVal; }
 	 */
-	private String getSdcardFiles() {
-		String fileLocation = null;
-
-		try {
-			File fileDir = new File(getExternalFilesDir(null), "");
-			for (File f : fileDir.listFiles()) {
-				if (f.getName().equalsIgnoreCase("AndroDump")) {
-					fileLocation = f.getAbsolutePath();
-					break;
-				}
-			}
-		} catch (Exception e) {
-			Log.e(this.LOG_TAG + "getSdcardFiles()", "Failed to Get the Directory Listing", e);
-		}
-
-		return fileLocation;
-	}
-
-	public void moveToBin(String filePath, String fileName) {
-		boolean exitSu = false;
-		java.lang.Process suProcess;
-
-		try {
-			// Open Root Shell
-			suProcess = Runtime.getRuntime().exec("su");
-
-			// Get the Output Stream from the Shell
-			DataOutputStream os = new DataOutputStream(suProcess.getOutputStream());
-			// Get Input Stream to the Shell
-			DataInputStream osRes = new DataInputStream(suProcess.getInputStream());
-
-			if (os != null && osRes != null) {
-				os.writeBytes("id\n");
-				os.flush();
-
-				String curUid = osRes.readUTF().toString();
-				if (curUid == null) {
-					Log.e(this.LOG_TAG + "moveToBin()", "Can't get root access or denied by user");
-				} else if (curUid.contains("uid=0") == true) {
-					Log.e(this.LOG_TAG + "moveToBin()", "Root Acess Granted: " + curUid);
-
-					/*
-					 * os.writeBytes("chown -v root " + filePath); os.flush();
-					 * os.writeBytes(filePath);
-					 */
-
-					os.writeBytes("mkdir /data/app/android_security_suite\n");
-					os.flush();
-					os.writeBytes("mv -v " + filePath + " /system/bin/. \n");
-					os.flush();
-
-					if (osRes.readUTF().toString().contains("system")) {
-						Log.d(this.LOG_TAG + "moveToBin()", "Executable moved to /system/bin directory");
-						os.writeBytes("chown -v root /system/bin/" + fileName + "\n");
-						os.flush();
-						if (osRes.readUTF().toString().contains("changed ownership")) {
-							Log.d(this.LOG_TAG + "moveToBin()", "root permissions granted.");
-						}
-					}
-
-					exitSu = true;
-					// Copy files from Sdcard to /system/bin directory
-				} else {
-					Log.e(this.LOG_TAG + "moveToBin()", "Root Access Rejected: " + curUid);
-				}
-
-				if (exitSu) {
-					os.writeBytes("exit\n");
-					os.flush();
-					Log.e(this.LOG_TAG + "moveToBin()", "SU Shell Terminated: " + curUid);
-				}
-
-			}
-		} catch (Exception e) {
-			Log.e(this.LOG_TAG + "moveToBin()", "Unable to move the file", e);
-		}
-	}
-
-	public final boolean execute() {
-		boolean retVal = false;
-
-		return retVal;
-	}
 
 }

@@ -8,12 +8,61 @@
     android:paddingTop="@dimen/activity_vertical_margin"
     tools:context="com.example.android_security_suite.MainActivity" >
 
+    <Button
+        android:id="@+id/nmap"
+        android:layout_width="fill_parent"
+        android:layout_height="60dp"
+        android:layout_alignParentBottom="true"
+        android:text="@string/nmap" />
+
+    <Button
+        android:id="@+id/dns"
+        android:layout_width="fill_parent"
+        android:layout_height="60dp"
+        android:layout_above="@+id/nmap"
+        android:text="@string/dns" />
+
+    <Button
+        android:id="@+id/arp"
+        android:layout_width="fill_parent"
+        android:layout_height="60dp"
+        android:layout_above="@+id/dns"
+        android:text="@string/arp" />
+
+    <Button
+        android:id="@+id/crafter"
+        android:layout_width="fill_parent"
+        android:layout_height="60dp"
+        android:layout_above="@+id/arp"
+        android:text="@string/crafter" />
+
     <TextView
         android:id="@+id/textView1"
-        android:layout_width="wrap_content"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/title"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="14dp"
+        android:gravity="center_horizontal"
+        android:text="TextView" />
+
+    <TextView
+        android:id="@+id/title"
+        android:layout_width="fill_parent"
         android:layout_height="wrap_content"
         android:layout_alignParentTop="true"
-        android:layout_centerHorizontal="true"
-        android:text="ANDROID SECURITY SUITE" />
+        android:fontFamily="serif"
+        android:gravity="center_horizontal"
+        android:text="ANDROID SECURITY SUITE"
+        android:textSize="24dp"
+        android:textStyle="bold" />
+
+    <Button
+        android:id="@+id/androdump"
+        android:layout_width="fill_parent"
+        android:layout_height="60dp"
+        android:layout_above="@+id/crafter"
+        android:onClick="startAndroDumpActivity"
+        android:text="@string/dump" />
 
 </RelativeLayout>
