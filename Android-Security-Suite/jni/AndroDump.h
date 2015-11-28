@@ -49,6 +49,8 @@ extern "C" {
 
 int submit_log(char *msgType, char *string);
 
+void pkt_callback(u_char *ptr_null, const struct pcap_pkthdr* pkthdr, const u_char* packet);
+
 #ifdef __cplusplus
 }
 #endif

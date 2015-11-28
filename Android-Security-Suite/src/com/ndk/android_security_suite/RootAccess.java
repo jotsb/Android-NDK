@@ -16,6 +16,7 @@ import android.util.Log;
 public abstract class RootAccess {
 
 	private final static String LOG_TAG = "[ANDROID_SECURITY_SUITE] ===> ";
+	private final static String NDK_LOCATION = "/data/app/android-security-suite/";
 	ArrayList<String> commands = new ArrayList<String>();
 
 	/**
@@ -42,13 +43,13 @@ public abstract class RootAccess {
 		AssetManager assetManager = assetM;
 
 		try {
-			assets = assetManager.list(arch);
+			assets = assetManager.list("");
 
 			if (assets != null) {
 				for (String asset : assets) {
 					if (asset.equalsIgnoreCase(arch)) {
-						// String filePath = arch + "/" + fileName;
-						in = assetManager.open(fileName);
+						String filePath = arch + "/" + fileName;
+						in = assetManager.open(filePath);
 						File outFile = new File(sdCard, fileName);
 						out = new FileOutputStream(outFile);
 						retVal = copyFile(in, out);
@@ -90,11 +91,14 @@ public abstract class RootAccess {
 	 * @return
 	 */
 	public static String moveAsset(File sdCard, String fileName) {
-		String execLocation = null;
+		String execLocation = "";
+		String logFile = "";
 		try {
-			File fileDir = new File(sdCard, "");
-			for (File f : fileDir.listFiles()) {
+			// File fileDir = new File(sdCard, "");
+			File[] files = sdCard.listFiles();
+			for (File f : files) {
 				if (f.getName().equalsIgnoreCase(fileName)) {
+					logFile = f.getName();
 					execLocation = f.getAbsolutePath();
 					break;
 				}
@@ -102,6 +106,7 @@ public abstract class RootAccess {
 		} catch (Exception e) {
 			Log.e(LOG_TAG + "RootAccess.moveAsset()", "Failed to Get the Directory Listing", e);
 		}
+		Log.e(LOG_TAG, "Asset Location: " + execLocation + " Asset Name: " + logFile);
 		return execLocation;
 	}
 
@@ -125,29 +130,31 @@ public abstract class RootAccess {
 			if (executeCmd != null && cmdOutput != null) {
 				executeCmd.writeBytes("id\n");
 				executeCmd.flush();
-				String curUid = cmdOutput.readUTF().toString();
+				String curUid = cmdOutput.readLine();
 				if (curUid == null) {
-					Log.d(LOG_TAG, "Can't get ROOT Access or Denied by User");
+					Log.e(LOG_TAG, "Can't get ROOT Access or Denied by User");
 				} else if (curUid.contains("uid=0")) {
-					Log.d(LOG_TAG, "ROOT Access Granted: " + curUid);
-					executeCmd.writeBytes("mkdir /data/app/android-security-suite\n");
-					executeCmd.flush();
-					executeCmd.writeBytes("mv -v " + filePath + "/data/app/android-security-suite/.\n");
+					Log.e(LOG_TAG, "ROOT Access Granted: " + curUid);
+					executeCmd.writeBytes("mkdir " + NDK_LOCATION + "\n");
 					executeCmd.flush();
 
-					if (cmdOutput.readUTF().toString().contains("/data/app/android-security-suite")) {
-						Log.d(LOG_TAG, "Executable Successfully moved to /data/app/android-security-suite directory");
-						executeCmd.writeBytes("chown -v root /data/app/android-security-suite/" + fileName + "\n");
-						executeCmd.flush();
-						if (cmdOutput.readUTF().toString().contains("changed ownership")) {
-							retVal = true;
-							Log.d(LOG_TAG, "ROOT Permission Granted");
-						}
-					}
+					executeCmd.writeBytes("mv " + filePath + " " + NDK_LOCATION + "\n");
+					executeCmd.flush();
+					Log.e(LOG_TAG, "Executable Successfully moved to " + NDK_LOCATION + " directory");
+
+					executeCmd.writeBytes("chown -v root " + NDK_LOCATION + fileName + "\n");
+					executeCmd.flush();
+					retVal = true;
+					Log.e(LOG_TAG, "ROOT Permission Granted");
+
+					executeCmd.writeBytes("chmod 775 " + NDK_LOCATION + fileName + "\n");
+					executeCmd.flush();
+					Log.e(LOG_TAG, "Execute permissions given to the Executable");
+
 					exitSu = true;
 				} else {
 					exitSu = true;
-					Log.d(LOG_TAG, "ROOT Access Rejected: " + curUid);
+					Log.e(LOG_TAG, "ROOT Access Rejected: " + curUid);
 				}
 
 				if (exitSu) {

@@ -6,9 +6,9 @@ import java.io.IOException;
 
 import android.util.Log;
 
-public class NDKMethods {
+public class NDKMethods extends RootAccess {
 
-	public static String start_capture() {
+	public static String capture() {
 
 		// String location = null;
 		String curUid = null;
@@ -49,6 +49,12 @@ public class NDKMethods {
 		return curUid;
 	}
 
+	public static String start_capture() {
+		
+		
+		
+		return null;
+	}
 	// public native static String set_msg(String text);
 	//
 	// static {

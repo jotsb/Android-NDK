@@ -20,6 +20,7 @@
         android:layout_width="fill_parent"
         android:layout_height="60dp"
         android:layout_above="@+id/nmap"
+        android:onClick="startDNSSpooferActivity"
         android:text="@string/dns" />
 
     <Button
@@ -27,6 +28,7 @@
         android:layout_width="fill_parent"
         android:layout_height="60dp"
         android:layout_above="@+id/dns"
+        android:onClick="startARPSpooferActivity"
         android:text="@string/arp" />
 
     <Button
@@ -34,6 +36,7 @@
         android:layout_width="fill_parent"
         android:layout_height="60dp"
         android:layout_above="@+id/arp"
+        android:onClick="startPacketCrafterActivity"
         android:text="@string/crafter" />
 
     <TextView
@@ -44,7 +47,7 @@
         android:layout_centerHorizontal="true"
         android:layout_marginTop="14dp"
         android:gravity="center_horizontal"
-        android:text="TextView" />
+        android:text="" />
 
     <TextView
         android:id="@+id/title"
@@ -53,7 +56,7 @@
         android:layout_alignParentTop="true"
         android:fontFamily="serif"
         android:gravity="center_horizontal"
-        android:text="ANDROID SECURITY SUITE"
+        android:text="@string/android_security_suite"
         android:textSize="24dp"
         android:textStyle="bold" />
 

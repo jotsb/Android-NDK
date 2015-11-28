@@ -7,6 +7,7 @@ import java.io.File;
 import android.app.Activity;
 import android.content.Intent;
 import android.content.res.AssetManager;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -19,22 +20,23 @@ public class MainActivity extends Activity {
 	private String SYSTEM_ARCHITECTURE;
 	private final String LOG_TAG = "[ANDROID_SECURITY_SUITE] ===> ";
 
+	TextView textView;
+	AssetManager assetManager;
+	File sdCard;
+
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_main);
 
 		String exePath = null;
-		TextView textView = (TextView) this.findViewById(R.id.textView1);
+		this.textView = (TextView) this.findViewById(R.id.textView1);
 
 		this.SYSTEM_ARCHITECTURE = Support.getCPUArch();
 		Toast.makeText(getApplicationContext(), this.SYSTEM_ARCHITECTURE, Toast.LENGTH_SHORT).show();
 
-		AssetManager assetManager = getAssets();
-		File sdCard = getExternalFilesDir(null);
-
-		InitialSetup setup = new InitialSetup(assetManager, sdCard, this.SYSTEM_ARCHITECTURE);
-		setup.executeSetup();
+		this.assetManager = getAssets();
+		this.sdCard = getExternalFilesDir(null);
 
 		/*
 		 * try { String[] asset = assetManager.list(this.SYSTEM_ARCHITECTURE);
@@ -59,6 +61,12 @@ public class MainActivity extends Activity {
 	public boolean onCreateOptionsMenu(Menu menu) {
 		// Inflate the menu; this adds items to the action bar if it is present.
 		getMenuInflater().inflate(R.menu.main, menu);
+
+		InitialSetup is = new InitialSetup(this.assetManager, this.sdCard, this.SYSTEM_ARCHITECTURE);
+		String filePath = is.executeSetup();
+
+		this.textView.setText(filePath);
+
 		return true;
 	}
 
@@ -76,6 +84,21 @@ public class MainActivity extends Activity {
 
 	public void startAndroDumpActivity(View view) {
 		Intent intent = new Intent(this, AndroDumpActivity.class);
+		startActivity(intent);
+	}
+
+	public void startPacketCrafterActivity(View view) {
+		Intent intent = new Intent(this, PacketCrafterActivity.class);
+		startActivity(intent);
+	}
+
+	public void startDNSSpooferActivity(View view) {
+		Intent intent = new Intent(this, DNSSpooferActivity.class);
+		startActivity(intent);
+	}
+
+	public void startARPSpooferActivity(View view) {
+		Intent intent = new Intent(this, ARPSpooferActivity.class);
 		startActivity(intent);
 	}
 

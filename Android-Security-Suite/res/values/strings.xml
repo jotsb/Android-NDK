@@ -10,5 +10,9 @@
     <string name="dns">DNS Spoofer</string>
     <string name="nmap">Net Scan</string>
     <string name="title_activity_andro_dump">AndroDumpActivity</string>
+    <string name="title_activity_packet_crafter">PacketCrafterActivity</string>
+    <string name="title_activity_arpspoofer">ARPSpooferActivity</string>
+    <string name="title_activity_dnsspoofer">DNSSpooferActivity</string>
+    <string name="android_security_suite">ANDROID SECURITY SUITE</string>
 
 </resources>
