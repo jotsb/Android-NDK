@@ -15,9 +15,14 @@
 #define DEBUG_TAG "\n[ANDROID_SECURITY_SUITE] ===> LIBPCAP_DEBUGGING ======> "
 
 // Check all the headers in the Ethernet frame
-void pkt_callback(u_char *args,const struct pcap_pkthdr* pkthdr,const u_char* packet) {
+void pkt_callback(u_char *args,const struct pcap_pkthdr *pkt_hdr,const u_char* packet) {
 	static int count = 1;
 	submit_log("pkt_callback(): [%s]\n", "Running this function");
+
+	//Print out the header information
+		printf("Packet length: %d\n",pkt_hdr->len);
+    	printf("Ethernet Address Length: %d\n",ETHER_HDRLEN);
+
 	fprintf(stdout,"%d.. ",count);
 	fflush(stdout);
 	count++;
