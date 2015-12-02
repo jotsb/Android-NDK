@@ -1,0 +1,3 @@
+set solib-search-path ./obj/local/mips
+source /home/jb/Documents/Android/NDK/ndk/prebuilt/common/gdb/common.setup
+directory /home/jb/Documents/Android/NDK/ndk/platforms/android-21/arch-mips/usr/include jni/libpcap /home/jb/Documents/Android/NDK/ndk/sources/cxx-stl/system
