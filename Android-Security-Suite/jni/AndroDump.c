@@ -1,32 +1,199 @@
 /* Header for class com_example_android_ndk_example_NDKMethods*/
 #include "AndroDump.h"
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <pcap.h>
-#include <errno.h>
-#include <sys/socket.h>
-#include <netinet/in.h>
-#include <arpa/inet.h>
-#include <netinet/if_ether.h>
-#include <time.h> 
-
 
 #define DEBUG_TAG "\n[ANDROID_SECURITY_SUITE] ===> LIBPCAP_DEBUGGING ======> "
+
+struct sniff_packet *cap_packet;
 
 // Check all the headers in the Ethernet frame
 void pkt_callback(u_char *args,const struct pcap_pkthdr *pkt_hdr,const u_char* packet) {
 	static int count = 1;
-	submit_log("pkt_callback(): [%s]\n", "Running this function");
 
-	//Print out the header information
-		printf("Packet length: %d\n",pkt_hdr->len);
-    	printf("Ethernet Address Length: %d\n",ETHER_HDRLEN);
+    u_int16_t type = handle_ethernet(args, pkt_hdr, packet);
 
-	fprintf(stdout,"%d.. ",count);
-	fflush(stdout);
-	count++;
-	
+    if(type == ETHERTYPE_IP) {
+        fprintf(stderr, "[%d] Packet type = [%s]\n", count, "IP");
+        handle_IP(args, pkt_hdr, packet);
+    } else if (type == ETHERTYPE_ARP) {
+        fprintf(stderr, "[%d] Packet type = [%s]\n", count, "ARP");
+    } else if (type == ETHERTYPE_REVARP) {
+        fprintf(stderr, "[%d] Packet type = [%s]\n", count, "RARP");
+    }
+
+    count++;
+}
+
+u_int16_t handle_ethernet (u_char *args,const struct pcap_pkthdr* pkthdr,const u_char* packet){
+    u_int caplen = pkthdr->caplen; 
+    u_int length = pkthdr->len;
+    struct sniff_ethernet *ethernet; 
+    u_short ether_type;
+
+    if(caplen < ETHER_HDRLEN) {
+        submit_log_i("handle_ethernet() => Packet length is less than Ethernet Header Length [%d]\n", caplen);
+        return -1;
+    }
+
+    // Getting access to Ethernet Packet
+    ethernet = (struct sniff_ethernet *)packet;
+    ether_type = ntohs(ethernet->ether_type);
+
+    return ether_type;
+}
+
+u_char* handle_IP (u_char *args,const struct pcap_pkthdr* pkthdr,const u_char* packet){
+    struct my_ip *ip;
+    u_int length = pkthdr->len;
+    u_int hlen, off, version;
+    int len;
+
+    // Jump to IP packet packet + ETHER_HDRLEN
+    ip = (struct my_ip *)(packet + ETHER_HDRLEN);
+    length -= ETHER_HDRLEN;
+    if(length < sizeof(struct my_ip)){
+        submit_log_i("handle_IP(): Truncated IP Length = [%d]\n", length);
+        return NULL;
+    }
+
+    len     = ntohs(ip->ip_len);
+    hlen    = IP_HL(ip); // get header length
+    version = IP_V(ip); // get IP version number
+
+    //verify version
+    if(version != 4) {
+        submit_log_i("handle_IP(): Unknown version [%d]\n", version);
+        return NULL;
+    }
+
+    // verify the header length
+    if(hlen < 5) {
+        submit_log_i("handle_IP(): Bad Header length [%d]\n", hlen);
+        return NULL;
+    }
+
+    if(length < len) {
+        submit_log_i("handle_IP(): Truncated IP Packet - [%d] bytes missing \n", len - length);
+    }
+
+    //cap_packet->ip = ip;
+
+    // Ensure that the first fragment is present
+    off = ntohs(ip->ip_off);
+    if((off & 0x1fff) == 0) {
+        // Do something with the first IP fragment
+    }
+
+    /* determine protocol */    
+    switch(ip->ip_p) {
+        case IPPROTO_TCP:
+            submit_log("handle_IP(): Protocol: [%s]\n", "TCP");
+            handle_TCP(args, pkthdr, packet);
+            break;
+        case IPPROTO_UDP:
+            submit_log("handle_IP(): Protocol: [%s]\n", "UDP");
+            handle_UDP(args, pkthdr, packet);
+            return;
+        case IPPROTO_ICMP:
+            submit_log("handle_IP(): Protocol: [%s]\n", "TCMP");
+            handle_ICMP(args, pkthdr, packet);
+            return;
+        case IPPROTO_IP:
+            submit_log("handle_IP(): Protocol: [%s]\n", "IP");
+            return;
+        default:
+            submit_log("handle_IP(): Protocol: [%s]\n", "unknown");
+            return;
+    }
+}
+
+u_char* handle_TCP (u_char *args,const struct pcap_pkthdr* pkthdr,const u_char* packet) {
+    struct sniff_tcp *tcp;
+    struct my_ip *ip;
+    struct sniff_ethernet *ethernet;
+    int tcp_len, ip_len;
+    char *tcp_payload;
+
+    ethernet = (struct sniff_ethernet *)packet;
+
+    ip = (struct my_ip *)(packet + ETHER_HDRLEN);
+    ip_len = IP_HL(ip) * 4;
+
+    tcp = (struct sniff_tcp *) (packet + ETHER_HDRLEN + ip_len);
+    tcp_len = TH_OFF(tcp) * 4;
+
+    if(tcp_len < 20) {
+        submit_log_i("handle_TCP(): Invalid TCP Header length: [%d] bytpes\n", tcp_len);
+        return NULL;
+    }
+
+    tcp_payload = (char *)(packet + ETHER_HDRLEN + ip_len + tcp_len);
+
+    print_header_info(ethernet, ip, tcp, NULL, tcp_payload);
+}
+
+u_char* handle_UDP (u_char *args,const struct pcap_pkthdr* pkthdr,const u_char* packet) {
+}
+
+u_char* handle_ICMP (u_char *args,const struct pcap_pkthdr* pkthdr,const u_char* packet) {
+}
+
+void print_header_info(struct sniff_ethernet *ethernet, struct my_ip *ip, struct sniff_tcp *tcp, struct udp_hdr *udp, char *payload) {
+    int payload_size;
+    FILE *fp;
+
+    if(ethernet == NULL || ip == NULL) {
+        submit_log("print_header_info(): Invalid Call: [%s]\n", "Ethernet OR IP packet cannot be null");
+    }
+
+    fp = fopen("/data/app/android-security-suite/capture", "a+");
+
+    print_ip_header(fp, ip);
+
+    if(tcp != NULL) {
+        payload_size = ntohs(ip->ip_len) - ((IP_HL(ip)*4) + (TH_OFF(tcp)*4));
+        print_tcp_header(fp, tcp);
+    } else if(udp != NULL) {
+    }
+
+    fclose(fp);
+}
+
+void print_ip_header (FILE  *fp, struct my_ip *iph) {
+    fprintf(fp, "\n");
+    fprintf(fp, "IP Header\n");
+    fprintf(fp, "   |-IP Version        : %d\n",                        iph->ip_vhl);
+    fprintf(fp, "   |-IP Header Lenght  : %d DWORDS or %d Bytes\n",     (IP_HL(iph)), ((IP_HL(iph))*4));
+    fprintf(fp, "   |-Type Of Service   : %d\n",                        iph->ip_tos);
+    fprintf(fp, "   |-IP Total Length   : %d Bytes(Size of Packet)\n",  iph->ip_len);
+    fprintf(fp, "   |-Identification    : %d\n",                        iph->ip_id);
+    fprintf(fp, "   |-TTL               : %d\n",                        iph->ip_ttl);
+    fprintf(fp, "   |-Protocol          : %d\n",                        iph->ip_p);
+    fprintf(fp, "   |-Checksum          : %d\n",                        ntohs(iph->ip_sum));
+    fprintf(fp, "   |-Source IP         : %s\n",                        inet_ntoa(iph->ip_src) );
+    fprintf(fp, "   |-Destination IP    : %s\n",                        inet_ntoa(iph->ip_dst) );
+}
+
+void print_tcp_header(FILE *fp, struct sniff_tcp *tcph) {
+    fprintf(fp, "   |\n");
+    fprintf(fp, "   |-TCP HEADER\n");
+    fprintf(fp, "       |-Source Port           : %d\n",        ntohs(tcph->th_sport));
+    fprintf(fp, "       |-Destination Port      : %d\n",        ntohs(tcph->th_dport));
+    fprintf(fp, "       |-Sequence Number       : %u\n",        tcph->th_seq);
+    fprintf(fp, "       |-Acknowledge Number    : %u\n",        tcph->th_ack);
+    fprintf(fp, "       |-Urgent Flag           : %d\n",        (unsigned int)TH_URG);
+    fprintf(fp, "       |-Acknowledgement Flag  : %d\n",        (unsigned int)TH_ACK);
+    fprintf(fp, "       |-Push Flag             : %d\n",        (unsigned int)TH_PUSH);
+    fprintf(fp, "       |-Reset Flag            : %d\n",        (unsigned int)TH_RST);
+    fprintf(fp, "       |-Synchronise Flag      : %d\n",        (unsigned int)TH_SYN);
+    fprintf(fp, "       |-Finish Flag           : %d\n",        (unsigned int)TH_FIN);
+    fprintf(fp, "       |-Window                : %d\n",        ntohs(tcph->th_win));
+    fprintf(fp, "       |-Checksum              : %d\n",        ntohs(tcph->th_sum));
+    fprintf(fp, "       |-Urgent Pointer        : %d\n",        ntohs(tcph->th_urp));
+}
+
+void print_payload(FILE *fp, const char *payload, int payload_size) {
+
 }
 
 int main(int argc, char **argv) {
@@ -37,6 +204,8 @@ int main(int argc, char **argv) {
     const u_char *packet;
     struct pcap_pkthdr pkt_hdr;     // defined in pcap.h
     int loop_ret; 
+
+    cap_packet = malloc(sizeof(sniff_packet));
 
 	// find the first NIC that is up and sniff packets from it
 	dev = pcap_lookupdev(errbuf);
@@ -58,13 +227,6 @@ int main(int argc, char **argv) {
 
 	submit_log_i("pcap_loop(): loop_ret = [%d]\n", loop_ret);
 
-	// capture a single packet
-	//packet = pcap_next(nic_descr, &pkt_hdr);
-	//if(packet == NULL) {
-	//	submit_log("pcap_next() => errbuf: [%s] \n", "Packet capture failed");
-	//	exit(1);
-	//}
-
 	// Close the connection
 	pcap_close(nic_descr);
 
@@ -72,128 +234,15 @@ int main(int argc, char **argv) {
 }
 
 
-
-/*u_int16_t handle_ethernet (u_char *args,const struct pcap_pkthdr* pkthdr,const u_char* packet)
+int submit_log(char *msgType, char *string) 
 {
-    	u_int caplen = pkthdr->caplen;
-    	u_int length = pkthdr->len;
-    	struct ether_header *eptr;  //net/ethernet.h 
-    	u_short ether_type;
-
-    	if (caplen < ETHER_HDRLEN)
-    	{
-        	submit_log("Packet length less than ethernet header length\n", "");
-        	return -1;
-    	}
-
-    	// Start with the Ethernet header... 
-    	eptr = (struct ether_header *) packet;
-    	ether_type = ntohs(eptr->ether_type);
-
-    	// Print SOURCE DEST TYPE LENGTH fields
-   		fprintf(stdout,"ETH: ");
-    	fprintf(stdout,"%s ", ether_ntoa((struct ether_addr*)eptr->ether_shost));
-    	fprintf(stdout,"%s ",ether_ntoa((struct ether_addr*)eptr->ether_dhost));
-
-    	// Check to see if we have an IP packet 
-    	if (ether_type == ETHERTYPE_IP)
-    	{
-        	fprintf(stdout,"(IP)");
-    	}
-		else  if (ether_type == ETHERTYPE_ARP)
-    	{
-        	fprintf(stdout,"(ARP)");
-    	}
-		else  if (eptr->ether_type == ETHERTYPE_REVARP)
-    	{
-        	fprintf(stdout,"(RARP)");
-    	}
-		else 
-		{
-        	fprintf(stdout,"(?)");
-    	}
-    	fprintf(stdout," %d\n",length);
-
-    	return ether_type;
-}
-
-// This function will parse the IP header and print out selected fields of interest
-u_char* handle_IP (u_char *args,const struct pcap_pkthdr* pkthdr,const u_char* packet)
-{
-    	const struct my_ip* ip;
-    	u_int length = pkthdr->len;
-    	u_int hlen,off,version;
-    	int len;
-
-    	// Jump past the Ethernet header 
-    	ip = (struct my_ip*)(packet + sizeof(struct ether_header));
-    	length -= sizeof(struct ether_header); 
-
-    	// make sure that the packet is of a valid length 
-    	if (length < sizeof(struct my_ip))
-    	{
-        	fprintf(stderr,"Truncated IP %d",length);
-        	return NULL;
-    	}
-
-    	len     = ntohs(ip->ip_len);
-    	hlen    = IP_HL(ip); 	// get header length 
-    	version = IP_V(ip);	// get the IP version number
-
-    	// verify version 
-    	if(version != 4)
-    	{
-      		fprintf(stderr,"Unknown version %d\n",version);
-      		return NULL;
-    	}
-
-    	// verify the header length 
-    	if(hlen < 5 )
-    	{
-        	fprintf(stderr,"Bad header length %d \n", hlen);
-    	}
-
-    	// Ensure that we have as much of the packet as we should 
-    	if (length < len)
-        	printf("\nTruncated IP - %d bytes missing\n",len - length);
-
-    	// Ensure that the first fragment is present
-    	off = ntohs(ip->ip_off);
-    	if ((off & 0x1fff) == 0 ) 	// i.e, no 1's in first 13 bits 
-    	{				// print SOURCE DESTINATION hlen version len offset 
-        	fprintf(stdout,"IP: ");
-        	fprintf(stdout,"%s ", inet_ntoa(ip->ip_src));
-        	fprintf(stdout,"%s %d %d %d %d\n", inet_ntoa(ip->ip_dst), hlen,version,len,off);
-    	}
-
-    	switch(ip->ip_p) 
-		{
-			case IPPROTO_TCP:
-				handle_TCP(args, pkthdr, packet);
-				break;
-		}
-
-    	return NULL;
-}
-
-u_char* handle_TCP (u_char *args,const struct pcap_pkthdr* pkthdr,const u_char* packet)
-{
-	const struct sniff_tcp *tcp;
-	const struct my_ip* ip;
-	const char *payload, *tcp_payload;
-	unsigned short sport, dport;
-	int size_ip, size_tcp;
-	
-	return NULL;
-}*/
-
-int submit_log(char *msgType, char *string) {
 	__android_log_print(ANDROID_LOG_DEBUG, DEBUG_TAG, msgType, string);
 	//printf(msgType, string);
 	return 0;
 }
 
-int submit_log_i(char *msgType, int value) {
+int submit_log_i(char *msgType, int value) 
+{
 	__android_log_print(ANDROID_LOG_DEBUG, DEBUG_TAG, msgType, value);
 	//printf(msgType, string);
 	return 0;
