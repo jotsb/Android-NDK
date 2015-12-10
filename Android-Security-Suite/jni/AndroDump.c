@@ -312,9 +312,9 @@ void print_payload(FILE *fp, const char *data, int size) {
 
 int main(int argc, char **argv) {
 
-	char *dev; // Network Device
-	char errbuf[PCAP_ERRBUF_SIZE];
-	pcap_t *nic_descr;
+    char *dev; // Network Device
+    char errbuf[PCAP_ERRBUF_SIZE];
+    pcap_t *nic_descr;
     const u_char *packet;
     struct pcap_pkthdr pkt_hdr;     // defined in pcap.h
     int loop_ret; 
