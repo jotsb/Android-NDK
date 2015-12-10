@@ -133,6 +133,31 @@ u_char* handle_TCP (u_char *args,const struct pcap_pkthdr* pkthdr,const u_char* 
 }
 
 u_char* handle_UDP (u_char *args,const struct pcap_pkthdr* pkthdr,const u_char* packet) {
+    struct udp_hdr *udp;
+    struct my_ip *ip;
+    struct sniff_ethernet *ethernet;
+    int udp_len, ip_len;
+    char *udp_payload;
+    u_int caplen = pkthdr->caplen; 
+
+    ethernet = (struct sniff_ethernet *)packet;
+
+    ip = (struct my_ip *)(packet + ETHER_HDRLEN);
+    ip_len = IP_HL(ip) * 4;
+
+    caplen -= (ETHER_HDRLEN + ip_len);
+
+    udp = (struct udp_hdr *)(packet + ETHER_HDRLEN + ip_len);
+    udp_len = sizeof(struct udp_hdr);
+
+    if(caplen < udp_len) {
+        submit_log_i("handle_UDP(): Invalid UDP Header length: [%d] bytpes\n", caplen);
+        return NULL;
+    }
+
+    udp_payload = (char *)(packet + ETHER_HDRLEN + ip_len + udp_len);
+
+    print_header_info(ethernet, ip, NULL, udp, udp_payload);
 }
 
 u_char* handle_ICMP (u_char *args,const struct pcap_pkthdr* pkthdr,const u_char* packet) {
@@ -148,52 +173,141 @@ void print_header_info(struct sniff_ethernet *ethernet, struct my_ip *ip, struct
 
     fp = fopen("/data/app/android-security-suite/capture", "a+");
 
-    print_ip_header(fp, ip);
-
     if(tcp != NULL) {
         payload_size = ntohs(ip->ip_len) - ((IP_HL(ip)*4) + (TH_OFF(tcp)*4));
+
+        fprintf(fp, "\n***********************TCP Packet*************************\n");
+        
+        print_ethernet_header(fp, ethernet);
+        print_ip_header(fp, ip);
         print_tcp_header(fp, tcp);
+        
+        fprintf(fp, " IP Header\n");
+        print_payload(fp, (const char *)ip, (IP_HL(ip)*4));
+        
+        fprintf(fp, " TCP HEADER\n");
+        print_payload(fp, (const char *)tcp, (TH_OFF(tcp)*4));
+        
+        fprintf(fp, " PAYLOAD\n");
+        print_payload(fp, payload, payload_size);
     } else if(udp != NULL) {
+        payload_size = ntohs(ip->ip_len) - ((IP_HL(ip)*4) + sizeof(struct udp_hdr));
+        
+        fprintf(fp, "\n***********************UDP Packet*************************\n");
+        
+        print_ethernet_header(fp, ethernet);
+        print_ip_header(fp, ip);
+        print_udp_header(fp, udp);
+        
+        fprintf(fp, " IP Header\n");
+        print_payload(fp, (const char *)ip, (IP_HL(ip)*4));
+
+        fprintf(fp, " UDP HEADER\n");
+        print_payload(fp, (const char *)udp, (sizeof(struct udp_hdr)));
+        
+        fprintf(fp, " PAYLOAD\n");
+        print_payload(fp, payload, payload_size);
     }
+
+    fprintf(fp, "\n###########################################################\n");
 
     fclose(fp);
 }
 
+void print_ethernet_header(FILE *fp, struct sniff_ethernet *eth) {
+    fprintf(fp, "\n");
+    fprintf(fp, " Ethernet Header\n");
+    fprintf(fp, "   |-Destination Address   : %.2X-%.2X-%.2X-%.2X-%.2X-%.2X \n",    eth->ether_dhost[0], eth->ether_dhost[1], eth->ether_dhost[2], eth->ether_dhost[3], eth->ether_dhost[4], eth->ether_dhost[5]);
+    fprintf(fp, "   |-Source Address        : %.2X-%.2X-%.2X-%.2X-%.2X-%.2X \n",    eth->ether_shost[0], eth->ether_shost[1], eth->ether_shost[2], eth->ether_shost[3], eth->ether_shost[4], eth->ether_shost[5]);
+    fprintf(fp, "   |-Source Address        : %u \n",                               eth->ether_type);
+}
+
 void print_ip_header (FILE  *fp, struct my_ip *iph) {
     fprintf(fp, "\n");
-    fprintf(fp, "IP Header\n");
-    fprintf(fp, "   |-IP Version        : %d\n",                        iph->ip_vhl);
-    fprintf(fp, "   |-IP Header Lenght  : %d DWORDS or %d Bytes\n",     (IP_HL(iph)), ((IP_HL(iph))*4));
-    fprintf(fp, "   |-Type Of Service   : %d\n",                        iph->ip_tos);
-    fprintf(fp, "   |-IP Total Length   : %d Bytes(Size of Packet)\n",  iph->ip_len);
-    fprintf(fp, "   |-Identification    : %d\n",                        iph->ip_id);
-    fprintf(fp, "   |-TTL               : %d\n",                        iph->ip_ttl);
-    fprintf(fp, "   |-Protocol          : %d\n",                        iph->ip_p);
-    fprintf(fp, "   |-Checksum          : %d\n",                        ntohs(iph->ip_sum));
-    fprintf(fp, "   |-Source IP         : %s\n",                        inet_ntoa(iph->ip_src) );
-    fprintf(fp, "   |-Destination IP    : %s\n",                        inet_ntoa(iph->ip_dst) );
+    fprintf(fp, " IP Header\n");
+    fprintf(fp, "   |-IP Version            : %d\n",                        iph->ip_vhl);
+    fprintf(fp, "   |-IP Header Lenght      : %d DWORDS or %d Bytes\n",     (IP_HL(iph)), ((IP_HL(iph))*4));
+    fprintf(fp, "   |-Type Of Service       : %d\n",                        iph->ip_tos);
+    fprintf(fp, "   |-IP Total Length       : %d Bytes(Size of Packet)\n",  iph->ip_len);
+    fprintf(fp, "   |-Identification        : %d\n",                        iph->ip_id);
+    fprintf(fp, "   |-TTL                   : %d\n",                        iph->ip_ttl);
+    fprintf(fp, "   |-Protocol              : %d\n",                        iph->ip_p);
+    fprintf(fp, "   |-Checksum              : %d\n",                        ntohs(iph->ip_sum));
+    fprintf(fp, "   |-Source IP             : %s\n",                        inet_ntoa(iph->ip_src) );
+    fprintf(fp, "   |-Destination IP        : %s\n",                        inet_ntoa(iph->ip_dst) );
 }
 
 void print_tcp_header(FILE *fp, struct sniff_tcp *tcph) {
-    fprintf(fp, "   |\n");
-    fprintf(fp, "   |-TCP HEADER\n");
-    fprintf(fp, "       |-Source Port           : %d\n",        ntohs(tcph->th_sport));
-    fprintf(fp, "       |-Destination Port      : %d\n",        ntohs(tcph->th_dport));
-    fprintf(fp, "       |-Sequence Number       : %u\n",        tcph->th_seq);
-    fprintf(fp, "       |-Acknowledge Number    : %u\n",        tcph->th_ack);
-    fprintf(fp, "       |-Urgent Flag           : %d\n",        (unsigned int)TH_URG);
-    fprintf(fp, "       |-Acknowledgement Flag  : %d\n",        (unsigned int)TH_ACK);
-    fprintf(fp, "       |-Push Flag             : %d\n",        (unsigned int)TH_PUSH);
-    fprintf(fp, "       |-Reset Flag            : %d\n",        (unsigned int)TH_RST);
-    fprintf(fp, "       |-Synchronise Flag      : %d\n",        (unsigned int)TH_SYN);
-    fprintf(fp, "       |-Finish Flag           : %d\n",        (unsigned int)TH_FIN);
-    fprintf(fp, "       |-Window                : %d\n",        ntohs(tcph->th_win));
-    fprintf(fp, "       |-Checksum              : %d\n",        ntohs(tcph->th_sum));
-    fprintf(fp, "       |-Urgent Pointer        : %d\n",        ntohs(tcph->th_urp));
+    fprintf(fp, "\n");
+    fprintf(fp, " TCP HEADER\n");
+    fprintf(fp, "   |-Source Port           : %d\n",        ntohs(tcph->th_sport));
+    fprintf(fp, "   |-Destination Port      : %d\n",        ntohs(tcph->th_dport));
+    fprintf(fp, "   |-Sequence Number       : %u\n",        tcph->th_seq);
+    fprintf(fp, "   |-Acknowledge Number    : %u\n",        tcph->th_ack);
+    fprintf(fp, "   |-Urgent Flag           : %d\n",        (unsigned int)TH_URG);
+    fprintf(fp, "   |-Acknowledgement Flag  : %d\n",        (unsigned int)TH_ACK);
+    fprintf(fp, "   |-Push Flag             : %d\n",        (unsigned int)TH_PUSH);
+    fprintf(fp, "   |-Reset Flag            : %d\n",        (unsigned int)TH_RST);
+    fprintf(fp, "   |-Synchronise Flag      : %d\n",        (unsigned int)TH_SYN);
+    fprintf(fp, "   |-Finish Flag           : %d\n",        (unsigned int)TH_FIN);
+    fprintf(fp, "   |-Window                : %d\n",        ntohs(tcph->th_win));
+    fprintf(fp, "   |-Checksum              : %d\n",        ntohs(tcph->th_sum));
+    fprintf(fp, "   |-Urgent Pointer        : %d\n",        ntohs(tcph->th_urp));
 }
 
-void print_payload(FILE *fp, const char *payload, int payload_size) {
+void print_udp_header(FILE *fp, struct udp_hdr *udph) {
+    fprintf(fp, "\n");
+    fprintf(fp, " UDP HEADER\n");
+    fprintf(fp, "   |-Source Port       : %d\n",    ntohs(udph->uh_sport));
+    fprintf(fp, "   |-Destination Port  : %d\n",    ntohs(udph->uh_dport));
+    fprintf(fp, "   |-UDP Length        : %d\n",    ntohs(udph->uh_ulen));
+    fprintf(fp, "   |-UDP Checksum      : %d\n",    ntohs(udph->uh_sum));
+}
 
+void print_payload(FILE *fp, const char *data, int size) {
+    int i , j;
+    for(i=0 ; i < size ; i++)
+    {
+        if( i!=0 && i%16==0)   //if one line of hex printing is complete...
+        {
+            fprintf(fp , "         ");
+            for(j=i-16 ; j<i ; j++)
+            {
+                if(data[j]>=32 && data[j]<=128)
+                    fprintf(fp , "%c",(unsigned char)data[j]); //if its a number or alphabet
+                 
+                else fprintf(fp , "."); //otherwise print a dot
+            }
+            fprintf(fp , "\n");
+        } 
+         
+        if(i%16==0) fprintf(fp , "   ");
+            fprintf(fp , " %02X",(unsigned int)data[i]);
+                 
+        if( i==size-1)  //print the last spaces
+        {
+            for(j=0;j<15-i%16;j++) 
+            {
+              fprintf(fp , "   "); //extra spaces
+            }
+             
+            fprintf(fp , "         ");
+             
+            for(j=i-i%16 ; j<=i ; j++)
+            {
+                if(data[j]>=32 && data[j]<=128) 
+                {
+                  fprintf(fp , "%c",(unsigned char)data[j]);
+                }
+                else
+                {
+                  fprintf(fp , ".");
+                }
+            }
+             
+            fprintf(fp ,  "\n" );
+        }
+    }
 }
 
 int main(int argc, char **argv) {

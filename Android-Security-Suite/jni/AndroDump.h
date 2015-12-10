@@ -160,14 +160,20 @@ u_char* handle_ICMP (u_char *args,const struct pcap_pkthdr* pkthdr,const u_char*
 // Handles printing of the packet header information
 void print_header_info(struct sniff_ethernet *ethernet, struct my_ip *ip, struct sniff_tcp *tcp, struct udp_hdr *udp, char *payload);
 
+// Prints Ethernet Header Info to a file
+void print_ethernet_header(FILE *fp, struct sniff_ethernet *eth);
+
 // Prints IP Header info to a file
 void print_ip_header (FILE  *fp, struct my_ip *iph);
 
 // Prints TCP Header info to a file
 void print_tcp_header(FILE *fp, struct sniff_tcp *tcp);
 
+// Prints UDP Header info to a file
+void print_udp_header(FILE *fp, struct udp_hdr *udph);
+
 // Prints TCP or UDP Payload to a file
-void print_payload(FILE *fp, const char *payload, int payload_size);
+void print_payload(FILE *fp, const char *payload, int size);
 
 
 #ifdef __cplusplus
