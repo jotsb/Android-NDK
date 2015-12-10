@@ -322,29 +322,29 @@ int main(int argc, char **argv) {
     cap_packet = malloc(sizeof(sniff_packet));
 
 	// find the first NIC that is up and sniff packets from it
-	dev = pcap_lookupdev(errbuf);
-	if (dev == NULL) {
-		submit_log("pcap_lookupdev => errbuf: [%s]\n", errbuf);
-		exit(1);
-	}
-	submit_log("Device: [%s]\n", dev);
+    dev = pcap_lookupdev(errbuf);
+    if (dev == NULL) {
+    	submit_log("pcap_lookupdev => errbuf: [%s]\n", errbuf);
+    	exit(1);
+    }
+    submit_log("Device: [%s]\n", dev);
 
-	// open device for reading
-	nic_descr = pcap_open_live(dev, BUFSIZ, 1, 0, errbuf);
-	if (nic_descr == NULL) {
-		submit_log("pcap_open_live() => errbuf: [%s] \n", errbuf);
-		exit(1);
-	}
-	submit_log("pcap_open_live(): [%s]\n", "Running this function");
+    // open device for reading
+    nic_descr = pcap_open_live(dev, BUFSIZ, 1, 0, errbuf);
+    if (nic_descr == NULL) {
+    	submit_log("pcap_open_live() => errbuf: [%s] \n", errbuf);
+    	exit(1);
+    }
+    submit_log("pcap_open_live(): [%s]\n", "Running this function");
 
-	loop_ret = pcap_loop(nic_descr, -1, pkt_callback, NULL);
+    loop_ret = pcap_loop(nic_descr, -1, pkt_callback, NULL);
 
-	submit_log_i("pcap_loop(): loop_ret = [%d]\n", loop_ret);
+    submit_log_i("pcap_loop(): loop_ret = [%d]\n", loop_ret);
 
-	// Close the connection
-	pcap_close(nic_descr);
+    // Close the connection
+    pcap_close(nic_descr);
 
-	return 0;
+    return 0;
 }
 
 
