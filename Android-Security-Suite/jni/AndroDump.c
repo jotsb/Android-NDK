@@ -258,10 +258,10 @@ void print_tcp_header(FILE *fp, struct sniff_tcp *tcph) {
 void print_udp_header(FILE *fp, struct udp_hdr *udph) {
     fprintf(fp, "\n");
     fprintf(fp, " UDP HEADER\n");
-    fprintf(fp, "   |-Source Port       : %d\n",    ntohs(udph->uh_sport));
-    fprintf(fp, "   |-Destination Port  : %d\n",    ntohs(udph->uh_dport));
-    fprintf(fp, "   |-UDP Length        : %d\n",    ntohs(udph->uh_ulen));
-    fprintf(fp, "   |-UDP Checksum      : %d\n",    ntohs(udph->uh_sum));
+    fprintf(fp, "   |-Source Port           : %d\n",    ntohs(udph->uh_sport));
+    fprintf(fp, "   |-Destination Port      : %d\n",    ntohs(udph->uh_dport));
+    fprintf(fp, "   |-UDP Length            : %d\n",    ntohs(udph->uh_ulen));
+    fprintf(fp, "   |-UDP Checksum          : %d\n",    ntohs(udph->uh_sum));
 }
 
 void print_payload(FILE *fp, const char *data, int size) {
