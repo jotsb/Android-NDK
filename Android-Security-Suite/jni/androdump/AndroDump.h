@@ -131,7 +131,8 @@ int submit_log(char *msgType, char *string);
 // Submits android logs, takes in int value
 int submit_log_i(char *msgType, int value);
 
-
+// find the first NIC that is up and sniff packets from it
+char* get_device();
 
 // Handles captured packets
 void pkt_callback(u_char *args,const struct pcap_pkthdr *pkt_hdr,const u_char* packet);

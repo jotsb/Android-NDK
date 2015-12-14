@@ -421,6 +421,21 @@ void print_payload(FILE *fp, const char *data, int size) {
     }
 }
 
+char* get_device() {
+    char errbuf[PCAP_ERRBUF_SIZE];
+    char *dev;
+
+    dev = pcap_lookupdev(errbuf);
+    if(dev == NULL) {
+        submit_log("pcap_lookupdev => errbuf: [%s]\n", errbuf);
+        return NULL;
+    }
+
+    submit_log("Device: [%s]\n", dev);
+
+    return dev;
+}
+
 int main(int argc, char **argv) {
 
     char *dev; // Network Device
@@ -430,13 +445,8 @@ int main(int argc, char **argv) {
     struct pcap_pkthdr pkt_hdr;     // defined in pcap.h
     int loop_ret; 
 
-	// find the first NIC that is up and sniff packets from it
-    dev = pcap_lookupdev(errbuf);
-    if (dev == NULL) {
-    	submit_log("pcap_lookupdev => errbuf: [%s]\n", errbuf);
-    	exit(1);
-    }
-    submit_log("Device: [%s]\n", dev);
+    dev = get_device();
+    
 
     // open device for reading
     nic_descr = pcap_open_live(dev, BUFSIZ, 1, 0, errbuf);
