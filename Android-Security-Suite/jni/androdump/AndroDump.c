@@ -225,15 +225,11 @@ void print_arp_header_info(struct sniff_ethernet *ethernet, struct arp_hdr *arp)
 
 void print_header_info(struct sniff_ethernet *ethernet, struct my_ip *ip, struct sniff_tcp *tcp, struct udp_hdr *udp, struct icmp_hdr *icmp, char *payload) {
     int payload_size;
-    FILE *fp;
-    //struct icmphdr *icmp = (struct icmphdr *)icmph;
 
     if(ethernet == NULL || ip == NULL) {
         submit_log("print_header_info(): Invalid Call: [%s]\n", "Ethernet OR IP packet cannot be null");
         exit(1);
     }
-
-    fp = fopen("/data/app/android-security-suite/capture", "a+");
 
     if(tcp != NULL) {
         payload_size = ntohs(ip->ip_len) - ((IP_HL(ip)*4) + (TH_OFF(tcp)*4));
@@ -289,8 +285,6 @@ void print_header_info(struct sniff_ethernet *ethernet, struct my_ip *ip, struct
     }
 
     fprintf(fp, "\n###########################################################\n");
-
-    fclose(fp);
 }
 
 void print_arp_header(FILE *fp, struct arp_hdr *arp){
@@ -493,7 +487,19 @@ int main(int argc, char **argv) {
     pcap_t *nic_descr;
     const u_char *packet;
     struct pcap_pkthdr pkt_hdr;     // defined in pcap.h
-    int loop_ret, c;
+    int loop_ret, c, status;
+
+    status = remove ("/data/app/android-security-suite/capture");
+
+    if( status == 0 )
+      submit_log("[%s] => file deleted successfully.\n","/data/app/android-security-suite/capture");
+    else
+    {
+        submit_log("[%s] => Unable to delete the file\n", "/data/app/android-security-suite/capture");
+        exit(1);
+    } 
+    
+    fp = fopen("/data/app/android-security-suite/capture", "w");
 
     dev = get_device();
 
@@ -508,26 +514,22 @@ int main(int argc, char **argv) {
                 case '?':
                     if(optopt == 'f') {
                         fprintf(stderr, "Option -%c requires an argument.\n", optopt);
+                        fprintf(stderr, "[USAGE] => %s -f \"dst port 80\" \n", argv[0]);
+                    } else if (isprint (optopt)) {
+                        fprintf (stderr, "Unknown option `-%c'.\n", optopt);
+                    } else {
+                        fprintf (stderr, "Unknown option character `\\x%x'.\n", optopt);
                     }
+                    return 1;
             }
         }
     }
 
-    // open device for reading
-    /*nic_descr = pcap_open_live(dev, BUFSIZ, 1, 0, errbuf);
-    if (nic_descr == NULL) {
-    	submit_log("pcap_open_live() => errbuf: [%s] \n", errbuf);
-    	exit(1);
-    }
-    submit_log("pcap_open_live(): [%s]\n", "Running this function");
-
-    loop_ret = pcap_loop(nic_descr, -1, pkt_callback, NULL);
-
-    submit_log_i("pcap_loop(): loop_ret = [%d]\n", loop_ret);*/
-
     // Close the connection
     pcap_close(nic_descr);
     submit_log("main(): pcap_close()=> [%s]\n", "Connection closed successfully");
+
+    fclose(fp);
 
     return 0;
 }

@@ -125,6 +125,9 @@ struct arp_hdr {
 }; 
 
 
+FILE *fp;
+
+
 // Submits android logs, takes in string msg
 int submit_log(char *msgType, char *string);
 
