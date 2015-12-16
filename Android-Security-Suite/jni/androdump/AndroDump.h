@@ -134,6 +134,9 @@ int submit_log_i(char *msgType, int value);
 // find the first NIC that is up and sniff packets from it
 char* get_device();
 
+// Starts setting up the packet capturing based on the filter
+void pcap_setup(char *filter);
+
 // Handles captured packets
 void pkt_callback(u_char *args,const struct pcap_pkthdr *pkt_hdr,const u_char* packet);
 

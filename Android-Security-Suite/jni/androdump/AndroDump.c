@@ -436,20 +436,85 @@ char* get_device() {
     return dev;
 }
 
+void pcap_setup(char *filter) {
+    char *dev;
+    char errbuf[PCAP_ERRBUF_SIZE];
+    struct bpf_program fp;
+    pcap_t *nic_descr;
+    int loop_ret;
+    bpf_u_int32 mask; //The netmask of our sniffing device
+    bpf_u_int32 net; //The IP of our sniffing device 
+
+    dev = get_device();
+
+    if (pcap_lookupnet(dev, &net, &mask, errbuf) == -1) 
+    {
+        submit_log("Can't get netmask for device: [%s]\n", dev);
+        net = 0;
+        mask = 0;
+        exit(1);
+    }
+
+    nic_descr = pcap_open_live(dev, BUFSIZ, 1, 0, errbuf);
+    if (nic_descr == NULL) {
+        submit_log("pcap_open_live() => errbuf: [%s] \n", errbuf);
+        exit(1);
+    }
+    submit_log("pcap_open_live(): [%s]\n", "Running this function");
+
+    if(filter == NULL) {
+        // start pcap_loop
+        loop_ret = pcap_loop(nic_descr, -1, pkt_callback, NULL);
+        submit_log_i("pcap_loop(): loop_ret = [%d]\n", loop_ret);
+    } else {
+        // setup the filter
+        if (pcap_compile(nic_descr, &fp, filter, 0, net) == -1) 
+        {          
+            submit_log("pcap_setup(): pcap_compile() => Error Calling PCAP_COMPILE() => FILTER = [%s] \n", filter);
+            exit(1);
+        } 
+        
+        if (pcap_setfilter(nic_descr, &fp) == -1) 
+        {
+            submit_log("pcap_setup(): pcap_setfilter() => [%s] \n", "Error Calling PCAP_SETFILTER()");
+            exit(1);
+        }
+
+        loop_ret = pcap_loop(nic_descr, -1, pkt_callback, NULL);
+        submit_log_i("pcap_loop(): loop_ret = [%d]\n", loop_ret);
+    }
+}
+
 int main(int argc, char **argv) {
 
     char *dev; // Network Device
+    char *filter = NULL;
     char errbuf[PCAP_ERRBUF_SIZE];
     pcap_t *nic_descr;
     const u_char *packet;
     struct pcap_pkthdr pkt_hdr;     // defined in pcap.h
-    int loop_ret; 
+    int loop_ret, c;
 
     dev = get_device();
-    
+
+    if(argc < 2) {
+        pcap_setup(NULL);
+    } else {
+        while((c = getopt (argc, argv, "f:")) != -1) {
+            switch(c) {
+                case 'f':
+                    filter = optarg;
+                    pcap_setup(filter);
+                case '?':
+                    if(optopt == 'f') {
+                        fprintf(stderr, "Option -%c requires an argument.\n", optopt);
+                    }
+            }
+        }
+    }
 
     // open device for reading
-    nic_descr = pcap_open_live(dev, BUFSIZ, 1, 0, errbuf);
+    /*nic_descr = pcap_open_live(dev, BUFSIZ, 1, 0, errbuf);
     if (nic_descr == NULL) {
     	submit_log("pcap_open_live() => errbuf: [%s] \n", errbuf);
     	exit(1);
@@ -458,10 +523,11 @@ int main(int argc, char **argv) {
 
     loop_ret = pcap_loop(nic_descr, -1, pkt_callback, NULL);
 
-    submit_log_i("pcap_loop(): loop_ret = [%d]\n", loop_ret);
+    submit_log_i("pcap_loop(): loop_ret = [%d]\n", loop_ret);*/
 
     // Close the connection
     pcap_close(nic_descr);
+    submit_log("main(): pcap_close()=> [%s]\n", "Connection closed successfully");
 
     return 0;
 }
