@@ -20,7 +20,6 @@ public class MainActivity extends Activity {
 	private String SYSTEM_ARCHITECTURE;
 	private final String LOG_TAG = "[ANDROID_SECURITY_SUITE] ===> ";
 
-	TextView textView;
 	AssetManager assetManager;
 	File sdCard;
 
@@ -30,7 +29,6 @@ public class MainActivity extends Activity {
 		setContentView(R.layout.activity_main);
 
 		String exePath = null;
-		this.textView = (TextView) this.findViewById(R.id.textView1);
 
 		this.SYSTEM_ARCHITECTURE = Support.getCPUArch();
 		Toast.makeText(getApplicationContext(), this.SYSTEM_ARCHITECTURE, Toast.LENGTH_SHORT).show();
@@ -55,17 +53,15 @@ public class MainActivity extends Activity {
 		 * Toast.makeText(getApplicationContext(), exePath,
 		 * Toast.LENGTH_SHORT).show(); moveToBin(exePath, "AndroDump"); }
 		 */
+
+		InitialSetup is = new InitialSetup(this.assetManager, this.sdCard, this.SYSTEM_ARCHITECTURE);
+		String filePath = is.executeSetup();
 	}
 
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
 		// Inflate the menu; this adds items to the action bar if it is present.
 		getMenuInflater().inflate(R.menu.main, menu);
-
-		InitialSetup is = new InitialSetup(this.assetManager, this.sdCard, this.SYSTEM_ARCHITECTURE);
-		String filePath = is.executeSetup();
-
-		this.textView.setText(filePath);
 
 		return true;
 	}

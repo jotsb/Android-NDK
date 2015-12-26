@@ -12,6 +12,7 @@
 #include <time.h>
 #include <signal.h>
 #include <pthread.h>
+#include <sys/stat.h>
 
 // Network Header Files
 #include <netinet/ip.h>
@@ -45,11 +46,33 @@
 
 #define DEBUG_TAG "\n[ANDROID_SECURITY_SUITE] ===> LIBPCAP_DEBUGGING ======> "
 
+#define DIRECTORY_LOC "/storage/emulated/0/com.ndk.android-security-suite"
+#define CAPTURE_FILE "/storage/emulated/0/com.ndk.android-security-suite/capture"
+
 // Ethernet header 
 struct sniff_ethernet {
         u_char ether_dhost[ETHER_ADDR_LEN];     // Destination host address 
         u_char ether_shost[ETHER_ADDR_LEN];     // Source host address 
         u_short ether_type;                     // IP? ARP? RARP? etc 
+};
+
+struct my_header {
+    struct in_addr ip_src;
+    struct in_addr ip_dst;
+    int is_tcp;
+    int is_udp;
+    int is_icmp;
+    int is_ip;
+    int is_arp;
+    u_int pkt_len;      //Total Packet size
+    u_short sport;      // source port 
+    u_short dport;      // destination port 
+    u_char th_flags;    // TCP flags
+    unsigned char type; // ICMP Protocol Type (request/reply)
+    u_char sha[6];      // Sender hardware address  
+    u_char spa[4];      // Sender IP address        
+    u_char tha[6];      // Target hardware address  
+    u_char tpa[4];      // Target IP address       
 };
 
 // IP Header
@@ -125,8 +148,15 @@ struct arp_hdr {
 }; 
 
 
-FILE *fp;
+FILE *fp, *fp_summary;
+struct my_header *summary;
+static int pkt_count = 1;
 
+//
+int init_dir();
+
+//
+int init_file();
 
 // Submits android logs, takes in string msg
 int submit_log(char *msgType, char *string);
@@ -138,7 +168,10 @@ int submit_log_i(char *msgType, int value);
 char* get_device();
 
 // Starts setting up the packet capturing based on the filter
-void pcap_setup(char *filter);
+void* pcap_setup(char *filter);
+
+// initialize my header structure with default values
+struct my_header* init_header();
 
 // Handles captured packets
 void pkt_callback(u_char *args,const struct pcap_pkthdr *pkt_hdr,const u_char* packet);
@@ -162,11 +195,15 @@ u_char* handle_UDP (u_char *args,const struct pcap_pkthdr* pkthdr,const u_char* 
 u_char* handle_ICMP (u_char *args,const struct pcap_pkthdr* pkthdr,const u_char* packet);
 
 // Handles printing of the ARP packet header information
-void print_arp_header_info(struct sniff_ethernet *ethernet, struct arp_hdr *arp);
+//void print_arp_header_info(struct sniff_ethernet *ethernet, );
 
 // Handles printing of the packet header information
-void print_header_info(struct sniff_ethernet *ethernet, struct my_ip *ip, struct sniff_tcp *tcp, struct udp_hdr *udp, struct icmp_hdr *icmp, char *payload);
+void print_header_info(struct sniff_ethernet *ethernet, struct arp_hdr *arp, struct my_ip *ip, struct sniff_tcp *tcp, struct udp_hdr *udp, struct icmp_hdr *icmp, char *payload);
 
+// Prints Header Summary
+void print_header_summary();
+
+// Prints ARP Header Info
 void print_arp_header(FILE *fp, struct arp_hdr *arp);
 
 // Prints Ethernet Header Info to a file

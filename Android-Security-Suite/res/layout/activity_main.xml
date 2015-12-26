@@ -40,16 +40,6 @@
         android:text="@string/crafter" />
 
     <TextView
-        android:id="@+id/textView1"
-        android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
-        android:layout_below="@+id/title"
-        android:layout_centerHorizontal="true"
-        android:layout_marginTop="14dp"
-        android:gravity="center_horizontal"
-        android:text="" />
-
-    <TextView
         android:id="@+id/title"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"

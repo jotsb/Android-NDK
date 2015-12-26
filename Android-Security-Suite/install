@@ -55,7 +55,7 @@ echo "$LINE"
 echo "$FILE INSTALLING Android-Security-Suite-debug.apk"
 echo "$LINE"
 echo "$FILE adb -d install -r ./bin/Android-Security-Suite-debug.apk"
-adb -d install -r ./bin/Android-Security-Suite-debug.apk
+adb -a install -r ./bin/Android-Security-Suite-debug.apk
 echo "$FILE INSTALLATION COMPLETE"
 echo
 sleep $SLEEP
