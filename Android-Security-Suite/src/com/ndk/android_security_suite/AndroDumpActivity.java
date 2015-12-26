@@ -116,16 +116,15 @@ public class AndroDumpActivity extends Activity {
 				dest_port = header[17].split(":")[1];
 
 				pkt = (line_num + ": " + src_ip + ":" + src_port + " > " + dest_ip + ":" + dest_port + " (" + protocol
-						+ ""
-						+ "0 [" + pkt_len + "] Bytes ");
-				
+						+ "" + "0 [" + pkt_len + "] Bytes ");
+
 			} else if (protocol.contains("UDP")) {
 				src_port = header[16].split(":")[1];
 				dest_port = header[17].split(":")[1];
 
 				pkt = (line_num + ": " + src_ip + ":" + src_port + " > " + dest_ip + ":" + dest_port + " (" + protocol
 						+ ") [" + pkt_len + "] Bytes ");
-				
+
 			} else if (protocol.contains("ICMP")) {
 				String type = header[16].split(":")[1];
 				pkt = (line_num + ": " + src_ip + " > " + dest_ip + " (" + protocol + ")  [" + pkt_len + "] Bytes "
@@ -136,7 +135,7 @@ public class AndroDumpActivity extends Activity {
 			dest_ip = header[11].split(":")[1];
 			protocol = header[6].split(":")[1];
 			String operation = header[7].split(":")[1];
-			
+
 			pkt = (line_num + ": " + src_ip + " > " + dest_ip + " (" + protocol + ") " + operation);
 		}
 
