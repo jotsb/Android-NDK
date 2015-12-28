@@ -368,18 +368,18 @@ void print_arp_header(FILE *fp, struct arp_hdr *arp){
 void print_ethernet_header(FILE *fp, struct sniff_ethernet *eth) {
     u_int16_t type;
     fprintf(fp, "Ethernet Header,");
-    fprintf(fp, "Destination MAC Address : %.2X-%.2X-%.2X-%.2X-%.2X-%.2X,",    eth->ether_dhost[0], eth->ether_dhost[1], eth->ether_dhost[2], eth->ether_dhost[3], eth->ether_dhost[4], eth->ether_dhost[5]);
+    fprintf(fp, "Dest MAC Address : %.2X-%.2X-%.2X-%.2X-%.2X-%.2X,",    eth->ether_dhost[0], eth->ether_dhost[1], eth->ether_dhost[2], eth->ether_dhost[3], eth->ether_dhost[4], eth->ether_dhost[5]);
     fprintf(fp, "Source MAC Address : %.2X-%.2X-%.2X-%.2X-%.2X-%.2X,",    eth->ether_shost[0], eth->ether_shost[1], eth->ether_shost[2], eth->ether_shost[3], eth->ether_shost[4], eth->ether_shost[5]);
-    fprintf(fp, "Type : %u",                               eth->ether_type);
+    fprintf(fp, "Type :");
 
     type = ntohs(eth->ether_type);
 
     if(type == ETHERTYPE_IP) {
-        fprintf(fp, " (%s),", "IP");
+        fprintf(fp, " %s,", "IP");
     } else if (type == ETHERTYPE_ARP) {
-        fprintf(fp, " (%s),", "ARP");
+        fprintf(fp, " %s,", "ARP");
     } else if (type == ETHERTYPE_REVARP) {
-        fprintf(fp, " (%s),", "RARP");
+        fprintf(fp, " %s,", "RARP");
     }
 }
 
@@ -394,20 +394,20 @@ void print_ip_header (FILE  *fp, struct my_ip *iph) {
     fprintf(fp, "Checksum : %d,",                        ntohs(iph->ip_sum));
     fprintf(fp, "Source IP : %s,",                        inet_ntoa(iph->ip_src) );
     fprintf(fp, "Destination IP : %s,",                        inet_ntoa(iph->ip_dst) );
-    fprintf(fp, "Protocol : %d",                          iph->ip_p);
+    fprintf(fp, "Protocol :");
 
     switch(iph->ip_p) {
         case IPPROTO_TCP:
-            fprintf(fp, " (%s),", "TCP");
+            fprintf(fp, " %s,", "TCP");
             break;
         case IPPROTO_UDP:
-            fprintf(fp, " (%s),", "UDP");
+            fprintf(fp, " %s,", "UDP");
             break;
         case IPPROTO_ICMP:
-            fprintf(fp, " (%s),", "ICMP");
+            fprintf(fp, " %s,", "ICMP");
             break;
         case IPPROTO_IP:
-            fprintf(fp, " (%s),", "IP");
+            fprintf(fp, " %s,", "IP");
             break;
     }
 }
@@ -442,17 +442,17 @@ void print_udp_header(FILE *fp, struct udp_hdr *udph) {
 
 void print_icmp_header(FILE *fp, struct icmp_hdr *icmph){
     fprintf(fp, " ICMP HEADER,");
-    fprintf(fp, "Type : %d",    (unsigned int)icmph->type);
+    fprintf(fp, "Type : ");
     if((unsigned int)(icmph->type) == 11)
     {
-        fprintf(fp , " (TTL Expired),");
+        fprintf(fp , " TTL Expired,");
     }
     else if((unsigned int)(icmph->type) == ICMP_ECHOREPLY)
     {
-        fprintf(fp , " (ICMP Echo Reply),");
+        fprintf(fp , " ICMP Echo Reply,");
     } else if((unsigned int)(icmph->type) == ICMP_ECHO)
     {
-        fprintf(fp , " (ICMP Echo Request),");
+        fprintf(fp , " ICMP Echo Request,");
     }
 
     fprintf(fp, "Code : %d,",    (unsigned int)icmph->code);

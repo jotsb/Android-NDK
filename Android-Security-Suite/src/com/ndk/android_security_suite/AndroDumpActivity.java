@@ -1,24 +1,23 @@
 package com.ndk.android_security_suite;
 
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStreamReader;
+import java.io.RandomAccessFile;
 import java.util.ArrayList;
 
 import android.app.Activity;
-import android.content.Context;
+import android.content.Intent;
 import android.os.Bundle;
 import android.os.Environment;
+import android.os.Handler;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.ViewGroup;
+import android.view.ViewTreeObserver.OnPreDrawListener;
+import android.widget.AdapterView;
+import android.widget.AdapterView.OnItemClickListener;
 import android.widget.ArrayAdapter;
-import android.widget.BaseAdapter;
 import android.widget.ListView;
-import android.widget.SectionIndexer;
 
 public class AndroDumpActivity extends Activity {
 
@@ -29,6 +28,10 @@ public class AndroDumpActivity extends Activity {
 	private ArrayList<String> lv_packets;
 	private ArrayAdapter<String> adapter;
 	private int line_num = 0;
+	private int runInterval = 500;
+	private long lastKnownPosition = 0;
+	private boolean tail = true;
+	private RandomAccessFile readFile;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -39,19 +42,29 @@ public class AndroDumpActivity extends Activity {
 		packets = new ArrayList<String>();
 		lv_packets = new ArrayList<String>();
 
-		adapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_single_choice, lv_packets);
+		lv.setOnItemClickListener(new OnItemClickListener() {
+			@Override
+			public void onItemClick(AdapterView<?> myAdapter, View myView, int position, long mylng) {
+				// String selectedFromList = (String)
+				// (lv.getItemAtPosition(myItemInt));
+				// adapter.add(myItemInt + "");
+
+				String pkt = packets.get(position);
+
+				Intent intent = new Intent(AndroDumpActivity.this, PacketDetailsActivity.class);
+				intent.putExtra("pkt_details", pkt);
+				startActivity(intent);
+
+			}
+		});
+
+		adapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_activated_1, lv_packets);
 		lv.setAdapter(adapter);
 
 		cap_loc = (getSdcard() + "/com.ndk.android-security-suite/capture");
 		cap_file = new File(cap_loc);
 
-		try {
-			readFile(cap_file);
-			// processLineByLine(cap_file);
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+		tailFile();
 	}
 
 	@Override
@@ -83,19 +96,51 @@ public class AndroDumpActivity extends Activity {
 		return path;
 	}
 
-	private void readFile(File fin) throws IOException {
-		FileInputStream fis = new FileInputStream(fin);
+	public void tailFile() {
+		final Handler handler = new Handler();
+		Thread t1 = new Thread(new Runnable() {
 
-		// Construct BufferedReader from InputStreamReader
-		BufferedReader br = new BufferedReader(new InputStreamReader(fis));
+			@Override
+			public void run() {
+				try {
+					while (tail) {
+						Thread.sleep(runInterval);
+						long fileLength = cap_file.length();
+						if (fileLength > lastKnownPosition) {
+							readFile = new RandomAccessFile(cap_file, "r");
+							readFile.seek(lastKnownPosition);
 
-		String line = null;
-		while ((line = br.readLine()) != null) {
-			packets.add(line);
-			processLine(line);
-		}
+							handler.post(new Runnable() {
+								@Override
+								public void run() {
+									String line = null;
+									try {
+										while ((line = readFile.readLine()) != null) {
+											packets.add(line);
+											processLine(line);
+										}
+										lastKnownPosition = readFile.getFilePointer();
+										readFile.close();
+									} catch (IOException e) {
+										e.printStackTrace();
+									}
+								}
+							});
 
-		br.close();
+						}
+					}
+				} catch (Exception e) {
+					stopRunning();
+				}
+			}
+
+		});
+
+		t1.start();
+	}
+
+	public void stopRunning() {
+		tail = false;
 	}
 
 	private void processLine(String aline) {
@@ -116,7 +161,7 @@ public class AndroDumpActivity extends Activity {
 				dest_port = header[17].split(":")[1];
 
 				pkt = (line_num + ": " + src_ip + ":" + src_port + " > " + dest_ip + ":" + dest_port + " (" + protocol
-						+ "" + "0 [" + pkt_len + "] Bytes ");
+						+ ") [" + pkt_len + "] Bytes ");
 
 			} else if (protocol.contains("UDP")) {
 				src_port = header[16].split(":")[1];
@@ -139,58 +184,28 @@ public class AndroDumpActivity extends Activity {
 			pkt = (line_num + ": " + src_ip + " > " + dest_ip + " (" + protocol + ") " + operation);
 		}
 
-		lv_packets.add(pkt);
-	}
-}
+		adapter.add(pkt);
+		lv.post(new Runnable() {
 
-class CustomListAdapter extends BaseAdapter implements SectionIndexer {
-
-	Context ctx = null;
-
-	public CustomListAdapter(Context ctx) {
-		this.ctx = ctx;
+			@Override
+			public void run() {
+				lv.setSelection(adapter.getCount() - 1);
+			}
+		});
 	}
 
-	@Override
-	public int getCount() {
-		// TODO Auto-generated method stub
-		return 0;
-	}
-
-	@Override
-	public Object getItem(int position) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public long getItemId(int position) {
-		// TODO Auto-generated method stub
-		return 0;
-	}
-
-	@Override
-	public View getView(int position, View convertView, ViewGroup parent) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public Object[] getSections() {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public int getPositionForSection(int sectionIndex) {
-		// TODO Auto-generated method stub
-		return 0;
-	}
-
-	@Override
-	public int getSectionForPosition(int position) {
-		// TODO Auto-generated method stub
-		return 0;
-	}
-
+	// private void readFile(File fin) throws IOException {
+	// FileInputStream fis = new FileInputStream(fin);
+	//
+	// // Construct BufferedReader from InputStreamReader
+	// BufferedReader br = new BufferedReader(new InputStreamReader(fis));
+	//
+	// String line = null;
+	// while ((line = br.readLine()) != null) {
+	// packets.add(line);
+	// processLine(line);
+	// }
+	//
+	// br.close();
+	// }
 }

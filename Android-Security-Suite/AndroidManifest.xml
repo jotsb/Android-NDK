@@ -59,6 +59,14 @@
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="com.ndk.android_security_suite.MainActivity" />
         </activity>
+        <activity
+            android:name=".PacketDetailsActivity"
+            android:label="@string/title_activity_packet_details"
+            android:parentActivityName=".AndroDumpActivity" >
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="com.ndk.android_security_suite.AndroDumpActivity" />
+        </activity>
     </application>
 
 </manifest>
