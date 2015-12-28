@@ -40,18 +40,45 @@ public class NDKMethods extends RootAccess {
 	 * return curUid; }
 	 */
 
-	public static String start_capture(String filter) {
-		ArrayList<String> cmds = new ArrayList<String>();
-		
-		if (filter == null) {
-			cmds.add(NDK_LOCATION + "AndroDump");
-		} else {
-			cmds.add(NDK_LOCATION + "AndroDump" + " " + filter);
-		}
-		
-		executeCommands(cmds);
+	public static void start_capture(final String filter) {
 
-		return null;
+		Thread t1 = new Thread(new Runnable() {
+
+			@Override
+			public void run() {
+				ArrayList<String> cmds = new ArrayList<String>();
+
+				if (filter == null || filter.trim().isEmpty()) {
+					cmds.add(NDK_LOCATION + "AndroDump");
+				} else {
+					cmds.add(NDK_LOCATION + "AndroDump" + " " + filter);
+				}
+				executeCommands(cmds);
+			}
+
+		});
+
+		t1.start();
+
+	}
+
+	public static void stop_application(final String app) {
+
+		Thread t1 = new Thread(new Runnable() {
+			@Override
+			public void run() {
+				ArrayList<String> cmds = new ArrayList<String>();
+
+				if (app != null || !app.trim().isEmpty()) {
+					cmds.add("pkill " + app);
+				}
+
+				executeCommands(cmds);
+			}
+		});
+		
+		t1.start();
+
 	}
 	// public native static String set_msg(String text);
 	//

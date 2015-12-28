@@ -13,10 +13,11 @@ import android.os.Handler;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.ViewTreeObserver.OnPreDrawListener;
+import android.view.View.OnClickListener;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.ArrayAdapter;
+import android.widget.Button;
 import android.widget.ListView;
 
 public class AndroDumpActivity extends Activity {
@@ -32,13 +33,18 @@ public class AndroDumpActivity extends Activity {
 	private long lastKnownPosition = 0;
 	private boolean tail = true;
 	private RandomAccessFile readFile;
+	private Button start_capture_btn;
+	private Button stop_capture_btn;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_andro_dump);
 
-		lv = (ListView) this.findViewById(R.id.packets);
+		lv = (ListView) findViewById(R.id.packets);
+		start_capture_btn = (Button) findViewById(R.id.start_capture_btn);
+		stop_capture_btn = (Button) findViewById(R.id.stop_capture_btn);
+
 		packets = new ArrayList<String>();
 		lv_packets = new ArrayList<String>();
 
@@ -64,7 +70,26 @@ public class AndroDumpActivity extends Activity {
 		cap_loc = (getSdcard() + "/com.ndk.android-security-suite/capture");
 		cap_file = new File(cap_loc);
 
-		tailFile();
+		start_capture_btn.setOnClickListener(new View.OnClickListener() {
+
+			@Override
+			public void onClick(View v) {
+				adapter.clear();
+				tailFile();
+				NDKMethods.start_capture(null);
+			}
+		});
+
+		stop_capture_btn.setOnClickListener(new View.OnClickListener() {
+
+			@Override
+			public void onClick(View v) {
+				stopRunning();
+				NDKMethods.stop_application("AndroDump");
+			}
+		});
+
+		// tailFile();
 	}
 
 	@Override
