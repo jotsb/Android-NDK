@@ -2,6 +2,8 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:focusable="true"
+    android:focusableInTouchMode="true"
     android:gravity="top"
     android:paddingBottom="@dimen/activity_vertical_margin"
     android:paddingLeft="@dimen/activity_horizontal_margin"
@@ -10,21 +12,20 @@
     tools:context="com.ndk.android_security_suite.AndroDumpActivity" >
 
     <EditText
-        android:id="@+id/filter"
+        android:id="@+id/filters"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_alignParentTop="true"
         android:layout_centerHorizontal="true"
         android:layout_margin="0dp"
-        android:focusableInTouchMode="false"
         android:inputType="text" />
 
     <Button
         android:id="@+id/start_capture_btn"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignLeft="@+id/filter"
-        android:layout_below="@+id/filter"
+        android:layout_alignLeft="@+id/filters"
+        android:layout_below="@+id/filters"
         android:layout_marginTop="10dp"
         android:text="@string/start_capture"
         android:textSize="12sp" />
@@ -33,8 +34,8 @@
         android:id="@+id/stop_capture_btn"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignRight="@+id/filter"
-        android:layout_below="@+id/filter"
+        android:layout_alignRight="@+id/filters"
+        android:layout_below="@+id/filters"
         android:layout_marginTop="10dp"
         android:text="@string/stop_capture"
         android:textSize="12sp" />
