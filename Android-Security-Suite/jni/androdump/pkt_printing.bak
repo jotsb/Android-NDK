@@ -1,0 +1,114 @@
+void print_arp_header(FILE *fp, struct arp_hdr *arp){
+    fprintf(fp, "\n");
+    fprintf(fp, " ARP Header\n");
+    fprintf(fp, "   |-Hardware Type         : %s \n",      (ntohs(arp->htype) == 1) ? "Ethernet" : "Unknown");
+    fprintf(fp, "   |-Protocol Type         : %s \n",      (ntohs(arp->ptype) == 0x0800) ? "IPV4" : "Unknown");
+    fprintf(fp, "   |-Operation             : %s \n",      (ntohs(arp->oper) == ARP_REQUEST) ? "ARP Request" : "ARP Reply");
+
+    if(ntohs(arp->htype) == 1 && ntohs(arp->ptype) == 0x0800) {
+        fprintf(fp, "   |-Sender MAC            : %.2X-%.2X-%.2X-%.2X-%.2X-%.2X \n",     arp->sha[0], arp->sha[1], arp->sha[2], arp->sha[3], arp->sha[4], arp->sha[5] );
+        fprintf(fp, "   |-Target MAC            : %.2X-%.2X-%.2X-%.2X-%.2X-%.2X \n",     arp->tha[0], arp->tha[1], arp->tha[2], arp->tha[3], arp->tha[4], arp->tha[5] );
+        fprintf(fp, "   |-Sender IP             : %d.%d.%d.%d \n",                        arp->spa[0], arp->spa[1], arp->spa[2], arp->spa[3] );
+        fprintf(fp, "   |-Target IP             : %d.%d.%d.%d \n" ,                       arp->tpa[0], arp->tpa[1], arp->tpa[2], arp->tpa[3] );
+    }
+}
+
+void print_ethernet_header(FILE *fp, struct sniff_ethernet *eth) {
+    u_int16_t type;
+
+    fprintf(fp, "\n");
+    fprintf(fp, " Ethernet Header\n");
+    fprintf(fp, "   |-Destination MAC Address   : %.2X-%.2X-%.2X-%.2X-%.2X-%.2X \n",    eth->ether_dhost[0], eth->ether_dhost[1], eth->ether_dhost[2], eth->ether_dhost[3], eth->ether_dhost[4], eth->ether_dhost[5]);
+    fprintf(fp, "   |-Source MAC Address        : %.2X-%.2X-%.2X-%.2X-%.2X-%.2X \n",    eth->ether_shost[0], eth->ether_shost[1], eth->ether_shost[2], eth->ether_shost[3], eth->ether_shost[4], eth->ether_shost[5]);
+    fprintf(fp, "   |-Type                      : %u",                               eth->ether_type);
+
+    type = eth->ether_type;
+
+    if(type == ETHERTYPE_IP) {
+        fprintf(fp, "   (%s)\n", "IP");
+    } else if (type == ETHERTYPE_ARP) {
+        fprintf(fp, "   (%s)\n", "ARP");
+    } else if (type == ETHERTYPE_REVARP) {
+        fprintf(fp, "   (%s)\n", "RARP");
+    }
+}
+
+void print_ip_header (FILE  *fp, struct my_ip *iph) {
+    fprintf(fp, "\n");
+    fprintf(fp, " IP Header\n");
+    fprintf(fp, "   |-IP Version            : %d\n",                        IP_V(iph));
+    fprintf(fp, "   |-IP Header Length      : %d DWORDS or %d Bytes\n",     (IP_HL(iph)), ((IP_HL(iph))*4));
+    fprintf(fp, "   |-Type Of Service       : %d\n",                        iph->ip_tos);
+    fprintf(fp, "   |-IP Total Length       : %d Bytes(Size of Packet)\n",  iph->ip_len);
+    fprintf(fp, "   |-Identification        : %d\n",                        iph->ip_id);
+    fprintf(fp, "   |-TTL                   : %d\n",                        iph->ip_ttl);
+    fprintf(fp, "   |-Checksum              : %d\n",                        ntohs(iph->ip_sum));
+    fprintf(fp, "   |-Source IP             : %s\n",                        inet_ntoa(iph->ip_src) );
+    fprintf(fp, "   |-Destination IP        : %s\n",                        inet_ntoa(iph->ip_dst) );
+    fprintf(fp, "   |-Protocol              : %d",                          iph->ip_p);
+
+    switch(iph->ip_p) {
+        case IPPROTO_TCP:
+            fprintf(fp, "    (%s)\n", "TCP");
+            break;
+        case IPPROTO_UDP:
+            fprintf(fp, "    (%s)\n", "UDP");
+            break;
+        case IPPROTO_ICMP:
+            fprintf(fp, "    (%s)\n", "ICMP");
+            break;
+        case IPPROTO_IP:
+            fprintf(fp, "    (%s)\n", "IP");
+            break;
+    }
+
+}
+
+void print_tcp_header(FILE *fp, struct sniff_tcp *tcph) {
+    fprintf(fp, "\n");
+    fprintf(fp, " TCP HEADER\n");
+    fprintf(fp, "   |-Source Port           : %d\n",        ntohs(tcph->th_sport));
+    fprintf(fp, "   |-Destination Port      : %d\n",        ntohs(tcph->th_dport));
+    fprintf(fp, "   |-Sequence Number       : %u\n",        tcph->th_seq);
+    fprintf(fp, "   |-Acknowledge Number    : %u\n",        tcph->th_ack);
+    fprintf(fp, "   |-Flags                 : %d\n",        (unsigned int)tcph->th_flags);
+    fprintf(fp, "   |-Urgent Flag           : %d\n",        (unsigned int)TH_URG);
+    fprintf(fp, "   |-Acknowledgement Flag  : %d\n",        (unsigned int)TH_ACK);
+    fprintf(fp, "   |-Push Flag             : %d\n",        (unsigned int)TH_PUSH);
+    fprintf(fp, "   |-Reset Flag            : %d\n",        (unsigned int)TH_RST);
+    fprintf(fp, "   |-Synchronise Flag      : %d\n",        (unsigned int)TH_SYN);
+    fprintf(fp, "   |-Finish Flag           : %d\n",        (unsigned int)TH_FIN);
+    fprintf(fp, "   |-Window                : %d\n",        ntohs(tcph->th_win));
+    fprintf(fp, "   |-Checksum              : %d\n",        ntohs(tcph->th_sum));
+    fprintf(fp, "   |-Urgent Pointer        : %d\n\n",        ntohs(tcph->th_urp));
+}
+
+void print_udp_header(FILE *fp, struct udp_hdr *udph) {
+    fprintf(fp, "\n");
+    fprintf(fp, " UDP HEADER\n");
+    fprintf(fp, "   |-Source Port           : %d\n",    ntohs(udph->uh_sport));
+    fprintf(fp, "   |-Destination Port      : %d\n",    ntohs(udph->uh_dport));
+    fprintf(fp, "   |-UDP Length            : %d\n",    ntohs(udph->uh_ulen));
+    fprintf(fp, "   |-UDP Checksum          : %d\n\n",    ntohs(udph->uh_sum));
+}
+
+void print_icmp_header(FILE *fp, struct icmp_hdr *icmph){
+
+    fprintf(fp, "\n");
+    fprintf(fp, " ICMP HEADER\n");
+    fprintf(fp, "   |-Type                  : %d",    (unsigned int)icmph->type);
+    if((unsigned int)(icmph->type) == 11)
+    {
+        fprintf(fp , "  (TTL Expired)\n");
+    }
+    else if((unsigned int)(icmph->type) == ICMP_ECHOREPLY)
+    {
+        fprintf(fp , "  (ICMP Echo Reply)\n");
+    } else if((unsigned int)(icmph->type) == ICMP_ECHO)
+    {
+        fprintf(fp , "  (ICMP Echo Request)\n");
+    }
+
+    fprintf(fp, "   |-Code                  : %d\n",    (unsigned int)icmph->code);
+    fprintf(fp, "   |-Checksum              : %d\n\n",    ntohs(icmph->checksum));
+}

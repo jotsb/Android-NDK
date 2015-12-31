@@ -4,4 +4,5 @@ MY_LOCAL_PATH := $(LOCAL_PATH)
 include $(CLEAR_VARS)
 
 include $(MY_LOCAL_PATH)/androdump/Android.mk
+include $(MY_LOCAL_PATH)/arpspoof/Android.mk
 include $(MY_LOCAL_PATH)/libpcap/Android.mk
