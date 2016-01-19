@@ -12,20 +12,6 @@ LINE="==========================================================================
 VAR=${1}
 SLEEP=1
 
-clear
-
-echo
-echo "$LINE"
-echo "$FILE CLEANING ANDROID PROJECT"
-echo "$LINE"
-echo "$FILE ant clean"
-echo
-ant clean
-echo
-echo
-sleep $SLEEP
-
-
 echo "$LINE"
 echo "$FILE BUILDING ANDROID PROJECT IN [ $VAR ] MODE"
 echo "$LINE"

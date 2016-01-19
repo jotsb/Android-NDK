@@ -1,6 +1,28 @@
-ndk-build clean
+FILE="[$0]"
+SLEEP=1
+LINE='#################################################################'
 
+
+#COMMANDS
+clear
+
+echo "$LINE"
+echo "$FILE CLEANING NDK PACKAGE"
+echo "$LINE"
+echo "$FILE ndk-build clean"
+sleep $SLEEP
+echo "$LINE"
 echo
-sleep 1
+ndk-build clean
+echo
+echo "$FILE done"
+echo
+sleep $SLEEP
 
+echo "$LINE"
+echo "$FILE ant clean"
+echo "$LINE"
+sleep 1
 ant clean
+echo "$FILE done"
+sleep $SLEEP

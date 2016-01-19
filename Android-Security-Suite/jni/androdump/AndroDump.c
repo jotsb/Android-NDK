@@ -664,6 +664,7 @@ int main(int argc, char **argv) {
                 case 'f':
                     filter = optarg;
                     pcap_setup(filter);
+                    break;
                 case '?':
                     if(optopt == 'f') {
                         fprintf(stderr, "Option -%c requires an argument.\n", optopt);

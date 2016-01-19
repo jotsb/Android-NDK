@@ -28,9 +28,9 @@
 #include <netinet/ether.h> 
 #include <netinet/in.h>
 #include <pcap.h>
+#include <arpa/inet.h>
 
 //#include <netinet/ip.h>
-//#include <arpa/inet.h>
 //#include <netinet/tcp.h>
 //#include <netinet/ip_icmp.h>
 
@@ -42,6 +42,9 @@
 // Ethernet addresses are 6 bytes
 #undef ETHER_ADDR_LEN
 #define ETHER_ADDR_LEN  6
+
+#define DEBUG_TAG "\n[ANDROID_SECURITY_SUITE] ===> LIBPCAP_DEBUGGING ======> "
+
 
 // Ethernet header 
 typedef struct sniff_ethernet {
@@ -65,6 +68,27 @@ typedef struct arp_hdr {
     u_char tpa[4];      // Target IP address       
 }arp_header; 
 
+// Global Variables
+char MY_IP_ADDR[16] = "192.168.0.12";
+char MY_MAC_ADDR[18] = "8c:3a:e3:99:24:0b";
+
+char VICTIM_IP_ADDR[16] = "192.168.0.15";
+//char VICTIM_MAC_ADDR[18] = "c0:ee:fb:5a:ce:5a";
+char VICTIM_MAC_ADDR[18] = "44:8a:5b:9e:00:9e";
+
+char ROUTER_IP_ADDR[16] = "192.168.0.1";
+char ROUTER_MAC_ADDR[18] = "50:39:55:63:17:b4";
+
+char BROADCAST_MAC_ADDR[18] = "00:00:00:00:00:00";
+
+int RAW;
+int PKT_LEN;
+unsigned char *PACKET;
+
+// Function Definitions
 eth_header* create_eth_header(char* ether_shost, char* ether_dhost, int ether_type);
 arp_header* create_arp_header(char* src_mac, char* src_ip, char* dest_mac, char* dest_ip, int arp_type);
-void send_packet(eth_header *ethernet, arp_header *arp);
+void send_packet(eth_header *ethernet, arp_header *arp, char *interface);
+int create_raw_socket(int socket_type);
+int submit_log(char *msgType, char *string);
+int submit_log_i(char *msgType, int value);
