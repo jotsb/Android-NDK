@@ -75,13 +75,42 @@ void send_packet(eth_header *ethernet, arp_header *arp, char *interface) {
 	free(PACKET);
 }
 
-int create_raw_socket(int socket_type) {
+int create_raw_socket(int socket_type, char *interface) {
 	int raw;
+	uint8_t *src_mac;
+	char *src_ip;
+	struct ifreq ifr;
+
+	memset (&ifr, 0, sizeof (ifr));
+	bzero(&ifr, sizeof(ifr));
+
+	src_mac = allocate_ustrmem(ETHER_ADDR_LEN);
+	src_ip = allocate_strmem(INET_ADDRSTRLEN);
+
+	strncpy((char *)ifr.ifr_name, interface, IFNAMSIZ);
 
 	if((raw = socket(PF_PACKET, SOCK_RAW, htons(socket_type))) < 0) {
 		submit_log("[%s]\n","Socket(): failed");
 		exit(EXIT_FAILURE);
 	}
+
+	if((ioctl(raw, SIOCGIFHWADDR, &ifr)) == -1) {
+		submit_log("create_raw_socket(): [%s]\n","Error getting HW ADDR");
+		exit(EXIT_FAILURE);
+	}
+	memcpy (src_mac, ifr.ifr_hwaddr.sa_data, ETHER_ADDR_LEN * sizeof(uint8_t));
+
+	if((ioctl(raw, SIOCGIFADDR, &ifr)) == -1) {
+		submit_log("create_raw_socket(): [%s]\n","Error getting IP ADDR");
+		exit(EXIT_FAILURE);
+	}
+
+	strcpy(src_ip, inet_ntoa(((struct sockaddr_in *)&ifr.ifr_addr)->sin_addr));
+
+	fprintf(stdout, "Interface: %s\n", interface);
+	print_mac_addr(src_mac);
+	fprintf(stdout, "IP ADDR: %s\n", src_ip);
+
 
 	return raw;
 }
@@ -124,7 +153,7 @@ int main(int argc, char **argv) {
 	} 
 
 	// Create a Raw Socket
-	RAW = create_raw_socket(ETH_P_ALL); 
+	RAW = create_raw_socket(ETH_P_ALL, interface); 
 
 	arg = 1;
 	if(setsockopt(RAW, SOL_SOCKET, SO_REUSEADDR, &arg, sizeof(arg)) == -1) {
@@ -189,4 +218,51 @@ int submit_log_i(char *msgType, int value) {
 	__android_log_print(ANDROID_LOG_DEBUG, DEBUG_TAG, msgType, value);
 	//printf(msgType, string);
 	return 0;
+}
+
+void print_mac_addr(uint8_t *mac) {
+	int i;
+	fprintf(stdout, "MAC ADDR: ");
+	for (i=0; i<5; i++) {
+    	fprintf (stdout, "%02x:", mac[i]);
+  	}
+  	fprintf (stdout, "%02x\n", mac[5]);
+}
+
+// Allocate memory for an array of unsigned chars.
+uint8_t * allocate_ustrmem (int len){
+  void *tmp;
+
+  if (len <= 0) {
+    fprintf (stderr, "ERROR: Cannot allocate memory because len = %i in allocate_ustrmem().\n", len);
+    exit (EXIT_FAILURE);
+  }
+
+  tmp = (uint8_t *) malloc (len * sizeof (uint8_t));
+  if (tmp != NULL) {
+    memset (tmp, 0, len * sizeof (uint8_t));
+    return (tmp);
+  } else {
+    fprintf (stderr, "ERROR: Cannot allocate memory for array allocate_ustrmem().\n");
+    exit (EXIT_FAILURE);
+  }
+}
+
+// Allocate memory for an array of chars.
+char * allocate_strmem (int len) {
+  void *tmp;
+
+  if (len <= 0) {
+    fprintf (stderr, "ERROR: Cannot allocate memory because len = %i in allocate_strmem().\n", len);
+    exit (EXIT_FAILURE);
+  }
+
+  tmp = (char *) malloc (len * sizeof (char));
+  if (tmp != NULL) {
+    memset (tmp, 0, len * sizeof (char));
+    return (tmp);
+  } else {
+    fprintf (stderr, "ERROR: Cannot allocate memory for array allocate_strmem().\n");
+    exit (EXIT_FAILURE);
+  }
 }

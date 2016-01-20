@@ -43,6 +43,9 @@
 #undef ETHER_ADDR_LEN
 #define ETHER_ADDR_LEN  6
 
+#define INET_ADDR_STRLEN 16
+#define MAC_ADDR_STRLEN 18
+
 #define DEBUG_TAG "\n[ANDROID_SECURITY_SUITE] ===> LIBPCAP_DEBUGGING ======> "
 
 
@@ -69,17 +72,17 @@ typedef struct arp_hdr {
 }arp_header; 
 
 // Global Variables
-char MY_IP_ADDR[16] = "192.168.0.12";
-char MY_MAC_ADDR[18] = "8c:3a:e3:99:24:0b";
+char MY_IP_ADDR[INET_ADDR_STRLEN] = "192.168.0.12";
+char MY_MAC_ADDR[MAC_ADDR_STRLEN] = "8c:3a:e3:99:24:0b";
 
-char VICTIM_IP_ADDR[16] = "192.168.0.15";
-//char VICTIM_MAC_ADDR[18] = "c0:ee:fb:5a:ce:5a";
-char VICTIM_MAC_ADDR[18] = "44:8a:5b:9e:00:9e";
+char VICTIM_IP_ADDR[INET_ADDR_STRLEN] = "192.168.0.15";
+//char VICTIM_MAC_ADDR[MAC_ADDR_STRLEN] = "c0:ee:fb:5a:ce:5a";
+char VICTIM_MAC_ADDR[MAC_ADDR_STRLEN] = "44:8a:5b:9e:00:9e";
 
-char ROUTER_IP_ADDR[16] = "192.168.0.1";
-char ROUTER_MAC_ADDR[18] = "50:39:55:63:17:b4";
+char ROUTER_IP_ADDR[INET_ADDR_STRLEN] = "192.168.0.1";
+char ROUTER_MAC_ADDR[MAC_ADDR_STRLEN] = "50:39:55:63:17:b4";
 
-char BROADCAST_MAC_ADDR[18] = "00:00:00:00:00:00";
+char BROADCAST_MAC_ADDR[MAC_ADDR_STRLEN] = "00:00:00:00:00:00";
 
 int RAW;
 int PKT_LEN;
@@ -89,6 +92,10 @@ unsigned char *PACKET;
 eth_header* create_eth_header(char* ether_shost, char* ether_dhost, int ether_type);
 arp_header* create_arp_header(char* src_mac, char* src_ip, char* dest_mac, char* dest_ip, int arp_type);
 void send_packet(eth_header *ethernet, arp_header *arp, char *interface);
-int create_raw_socket(int socket_type);
+int create_raw_socket(int socket_type, char *interface);
 int submit_log(char *msgType, char *string);
 int submit_log_i(char *msgType, int value);
+void print_mac_addr(uint8_t *mac);
+//P.D. Buchan (pdbuchan@yahoo.com)
+uint8_t *allocate_ustrmem (int len);
+char * allocate_strmem (int len);
