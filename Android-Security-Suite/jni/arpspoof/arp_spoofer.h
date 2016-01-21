@@ -72,6 +72,9 @@ typedef struct arp_hdr {
 }arp_header; 
 
 // Global Variables
+char *MY_IP_ADDRS;
+char *MY_MAC_ADDRS;
+
 char MY_IP_ADDR[INET_ADDR_STRLEN] = "192.168.0.12";
 char MY_MAC_ADDR[MAC_ADDR_STRLEN] = "8c:3a:e3:99:24:0b";
 
@@ -92,10 +95,11 @@ unsigned char *PACKET;
 eth_header* create_eth_header(char* ether_shost, char* ether_dhost, int ether_type);
 arp_header* create_arp_header(char* src_mac, char* src_ip, char* dest_mac, char* dest_ip, int arp_type);
 void send_packet(eth_header *ethernet, arp_header *arp, char *interface);
-int create_raw_socket(int socket_type, char *interface);
+int create_raw_socket(int socket_type);
 int submit_log(char *msgType, char *string);
 int submit_log_i(char *msgType, int value);
 void print_mac_addr(uint8_t *mac);
+
 //P.D. Buchan (pdbuchan@yahoo.com)
 uint8_t *allocate_ustrmem (int len);
 char * allocate_strmem (int len);
