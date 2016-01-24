@@ -48,6 +48,9 @@
 
 #define DEBUG_TAG "\n[ANDROID_SECURITY_SUITE] ===> LIBPCAP_DEBUGGING ======> "
 
+#define TRUE 1
+
+#define CONFIG_FILE_LOC "/storage/emulated/0/com.ndk.android-security-suite/arp-exec"
 
 // Ethernet header 
 typedef struct sniff_ethernet {

