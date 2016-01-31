@@ -22,11 +22,26 @@ sleep $SLEEP
 echo "$LINE"
 echo "$FILE CLEANING NDK ASSETS"
 echo "$LINE"
+sleep $SLEEP
 rm -vfr ./assets/*
 echo
 echo "$FILE done"
 echo
 sleep $SLEEP
+
+echo "$LINE"
+echo "$FILE CLEANING NDK LIBS"
+echo "$LINE"
+sleep $SLEEP
+cd ./libs
+rm -vfr ./arm64-v8a  ./armeabi  ./armeabi-v7a  ./mips ./ mips64  ./x86  ./x86_64
+cd ..
+echo
+echo "$FILE done"
+echo
+sleep $SLEEP
+
+
 
 echo "$LINE"
 echo "$FILE ant clean"
