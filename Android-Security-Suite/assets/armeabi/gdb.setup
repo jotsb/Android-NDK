@@ -1,3 +1,0 @@
-set solib-search-path ./obj/local/armeabi
-source /home/jb/Documents/Android/NDK/ndk/prebuilt/common/gdb/common.setup
-directory /home/jb/Documents/Android/NDK/ndk/platforms/android-21/arch-arm/usr/include jni/androdump/../libpcap jni/arpspoof/../libpcap jni/host-detection/../libpcap jni/libpcap /home/jb/Documents/Android/NDK/ndk/sources/cxx-stl/system

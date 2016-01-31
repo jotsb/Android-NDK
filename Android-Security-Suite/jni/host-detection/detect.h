@@ -83,8 +83,6 @@ int PKT_LEN;
 unsigned char *PACKET;
 
 // Function Definitions
-eth_header* create_eth_header(char* ether_shost, char* ether_dhost, int ether_type);
-//void send_packet(eth_header *ethernet, arp_header *arp, char *interface);
 int create_raw_socket(int socket_type);
 int submit_log(char *msgType, char *string);
 int submit_log_i(char *msgType, int value);
@@ -93,6 +91,10 @@ uint8_t* get_mac_addr(int socket, char *interface);
 char* get_ip_addr(int socket, char *interface);
 char* get_target_ip(char *src_ip);
 uint16_t checksum (uint16_t *addr, int len);
+uint16_t icmp4_checksum (struct icmp icmphdr, uint8_t *payload, int payloadlen);
+struct ip build_ip_hdr(int datalen, char *src_ip, char *dst_ip);
+struct icmp build_icmp_hdr(uint8_t *data, int datalen);
+uint8_t* build_ether_frame(int frame_length, uint8_t *src_mac, struct ip send_iphdr, struct icmp send_icmphdr, uint8_t *data, int datalen);
 
 //P.D. Buchan (pdbuchan@yahoo.com)
 uint8_t *allocate_ustrmem (int len);

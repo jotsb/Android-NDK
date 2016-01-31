@@ -1,7 +1,7 @@
 #include "detect.h"
 
 int main(int argc, char **argv) {
-	uint8_t *src_mac, *dst_mac, *data;
+	uint8_t *src_mac, *dst_mac, *data, *send_ether_frame, *recv_ether_frame;
 	struct ip send_iphdr, *recv_iphdr;
   	struct icmp send_icmphdr, *recv_icmphdr;
   	struct addrinfo hints, *res;
@@ -17,6 +17,8 @@ int main(int argc, char **argv) {
 
 	src_mac = allocate_ustrmem (ETHER_ADDR_LEN);
 	dst_mac = allocate_ustrmem (ETHER_ADDR_LEN);
+	send_ether_frame = allocate_ustrmem (IP_MAXPACKET);
+  	recv_ether_frame = allocate_ustrmem (IP_MAXPACKET);
 	data = allocate_ustrmem (IP_MAXPACKET);
 	interface = allocate_strmem (40);
 	src_ip = allocate_strmem(INET_ADDRSTRLEN);
@@ -24,6 +26,7 @@ int main(int argc, char **argv) {
 	dst_ip = allocate_strmem(INET_ADDRSTRLEN);
 	target_ip = allocate_strmem(INET_ADDRSTRLEN);
 	ip_flags = allocate_intmem(4);
+	done = 0;
 
 	if(argc < 2) {
 		fprintf(stderr, "1. Too Few Arguments\n");
@@ -62,41 +65,11 @@ int main(int argc, char **argv) {
 	}
 	fprintf (stderr, "3. Index for interface %s is %i\n", interface, device.sll_ifindex);
 
-	 // Set destination MAC address: you need to fill these out
-	dst_mac[0] = 0xff;
-	dst_mac[1] = 0xff;
-	dst_mac[2] = 0xff;
-	dst_mac[3] = 0xff;
-	dst_mac[4] = 0xff;
-	dst_mac[5] = 0xff;
-
-	src_ip = get_ip_addr(sendsd, interface);
-	strcpy(temp, src_ip);
-	submit_log("SRC IP [%s]", src_ip);
-	//target_ip = get_target_ip(src_ip);
-	//strcpy(src_ip, get_ip_addr(sendsd, interface)); //Source IPv4 address
-	strcpy(target_ip, get_target_ip(temp)); // Destination IPv4 address
-	submit_log("TARGET IP [%s]", target_ip);
-
 	// Fill out hints for getaddrinfo().
 	memset (&hints, 0, sizeof (struct addrinfo));
 	hints.ai_family = AF_INET;
 	hints.ai_socktype = SOCK_STREAM;
 	hints.ai_flags = hints.ai_flags | AI_CANONNAME;
-
-	// Resolve target using getaddrinfo().
-	if ((status = getaddrinfo (target_ip, NULL, &hints, &res)) != 0) {
-		fprintf (stderr, "4. getaddrinfo() failed: %s\n", gai_strerror (status));
-		exit (EXIT_FAILURE);
-	}
-	ipv4 = (struct sockaddr_in *) res->ai_addr;
-	tmp = &(ipv4->sin_addr);
-	if (inet_ntop (AF_INET, tmp, dst_ip, INET_ADDRSTRLEN) == NULL) {
-		status = errno;
-		fprintf (stderr, "5. inet_ntop() failed. Error message: %s\n", strerror (status));
-		exit (EXIT_FAILURE);
-	}
-	freeaddrinfo (res);
 
 	// Fill out sockaddr_ll.
 	device.sll_family = AF_PACKET;
@@ -110,7 +83,66 @@ int main(int argc, char **argv) {
 	data[2] = 's';
 	data[3] = 't';
 
-	// IPv4 header
+	src_ip = get_ip_addr(sendsd, interface);
+	submit_log("SRC IP [%s]", src_ip);
+
+	// GET TARGET LOOP STARTS HERE
+	for(;;) {
+		strcpy(temp, src_ip);
+		strcpy(target_ip, get_target_ip(temp)); // Destination IPv4 address
+		submit_log("TARGET IP [%s]", target_ip);
+
+		// Resolve target using getaddrinfo().
+		if ((status = getaddrinfo (target_ip, NULL, &hints, &res)) != 0) {
+			fprintf (stderr, "4. getaddrinfo() failed: %s\n", gai_strerror (status));
+			exit (EXIT_FAILURE);
+		}
+		ipv4 = (struct sockaddr_in *) res->ai_addr;
+		tmp = &(ipv4->sin_addr);
+		if (inet_ntop (AF_INET, tmp, dst_ip, INET_ADDRSTRLEN) == NULL) {
+			status = errno;
+			fprintf (stderr, "5. inet_ntop() failed. Error message: %s\n", strerror (status));
+			exit (EXIT_FAILURE);
+		}
+		freeaddrinfo (res);
+
+		send_iphdr = build_ip_hdr(datalen, src_ip, dst_ip);
+		send_icmphdr = build_icmp_hdr(data, datalen);
+		
+		// Fill out ethernet frame header.
+
+		// Ethernet frame length = ethernet header (MAC + MAC + ethernet type) + ethernet data (IP header + ICMP header + ICMP data)
+		frame_length = ETHER_HDRLEN + IP4_HDRLEN + ICMP_HDRLEN + datalen;
+
+		send_ether_frame = build_ether_frame(frame_length, src_mac, send_iphdr, send_icmphdr, data, datalen);
+
+		// Submit request for a raw socket descriptor to receive packets.
+		if ((recvsd = socket (PF_PACKET, SOCK_RAW, htons (ETH_P_ALL))) < 0) {
+			perror ("socket() failed to obtain a receive socket descriptor ");
+			exit (EXIT_FAILURE);
+		}
+
+		// Set maximum number of tries to ping remote host before giving up.
+		trylim = 3;
+		trycount = 0;
+
+		
+
+
+		if(TARGET_IP == 254) {
+			break; //break the target_ip loop
+		}
+	}
+
+	return 0;
+}
+
+// IPv4 header
+struct ip build_ip_hdr(int datalen, char *src_ip, char *dst_ip) {
+	struct ip send_iphdr;
+	int *ip_flags, status;
+
+	ip_flags = allocate_intmem(4);
 
 	// IPv4 header length (4 bits): Number of 32-bit words in header = 5
 	send_iphdr.ip_hl = IP4_HDRLEN / sizeof (uint32_t);
@@ -168,7 +200,66 @@ int main(int argc, char **argv) {
 	send_iphdr.ip_sum = 0;
 	send_iphdr.ip_sum = checksum ((uint16_t *) &send_iphdr, IP4_HDRLEN);
 
-	return 0;
+	return send_iphdr;
+}
+
+// ICMP header
+struct icmp build_icmp_hdr(uint8_t *data, int datalen) {
+	struct icmp send_icmphdr;
+	
+	// Message Type (8 bits): echo request
+	send_icmphdr.icmp_type = ICMP_ECHO;
+
+	// Message Code (8 bits): echo request
+	send_icmphdr.icmp_code = 0;
+
+	// Identifier (16 bits): usually pid of sending process - pick a number
+	send_icmphdr.icmp_id = htons (1000);
+
+	// Sequence Number (16 bits): starts at 0
+	send_icmphdr.icmp_seq = htons (0);
+
+	// ICMP header checksum (16 bits): set to 0 when calculating checksum
+	send_icmphdr.icmp_cksum = icmp4_checksum (send_icmphdr, data, datalen);
+
+	return send_icmphdr;
+}
+
+// Frame
+uint8_t* build_ether_frame(int frame_length, uint8_t *src_mac, struct ip send_iphdr, struct icmp send_icmphdr, uint8_t *data, int datalen) {
+	uint8_t *send_ether_frame, *dst_mac;
+	send_ether_frame = allocate_ustrmem (IP_MAXPACKET);
+	dst_mac = allocate_ustrmem (ETHER_ADDR_LEN);
+
+	 // Set destination MAC address: you need to fill these out
+	dst_mac[0] = 0xff;
+	dst_mac[1] = 0xff;
+	dst_mac[2] = 0xff;
+	dst_mac[3] = 0xff;
+	dst_mac[4] = 0xff;
+	dst_mac[5] = 0xff;
+
+	// Destination and Source MAC addresses
+	memcpy (send_ether_frame, dst_mac, 6);
+	memcpy (send_ether_frame + 6, src_mac, 6);
+
+	// Next is ethernet type code (ETH_P_IP for IPv4).
+	// http://www.iana.org/assignments/ethernet-numbers
+	send_ether_frame[12] = ETH_P_IP / 256;
+	send_ether_frame[13] = ETH_P_IP % 256;
+
+	// Next is ethernet frame data (IPv4 header + ICMP header + ICMP data).
+
+	// IPv4 header
+	memcpy (send_ether_frame + ETHER_HDRLEN, &send_iphdr, IP4_HDRLEN);
+
+	// ICMP header
+	memcpy (send_ether_frame + ETHER_HDRLEN + IP4_HDRLEN, &send_icmphdr, ICMP_HDRLEN);
+
+	// ICMP data
+	memcpy (send_ether_frame + ETHER_HDRLEN + IP4_HDRLEN + ICMP_HDRLEN, data, datalen);
+
+	return send_ether_frame;
 }
 
 uint16_t checksum (uint16_t *addr, int len) {
@@ -200,6 +291,56 @@ uint16_t checksum (uint16_t *addr, int len) {
   return (answer);
 }
 
+// Build IPv4 ICMP pseudo-header and call checksum function.
+uint16_t icmp4_checksum (struct icmp icmphdr, uint8_t *payload, int payloadlen) {
+  char buf[IP_MAXPACKET];
+  char *ptr;
+  int chksumlen = 0;
+  int i;
+
+  ptr = &buf[0];  // ptr points to beginning of buffer buf
+
+  // Copy Message Type to buf (8 bits)
+  memcpy (ptr, &icmphdr.icmp_type, sizeof (icmphdr.icmp_type));
+  ptr += sizeof (icmphdr.icmp_type);
+  chksumlen += sizeof (icmphdr.icmp_type);
+
+  // Copy Message Code to buf (8 bits)
+  memcpy (ptr, &icmphdr.icmp_code, sizeof (icmphdr.icmp_code));
+  ptr += sizeof (icmphdr.icmp_code);
+  chksumlen += sizeof (icmphdr.icmp_code);
+
+  // Copy ICMP checksum to buf (16 bits)
+  // Zero, since we don't know it yet
+  *ptr = 0; ptr++;
+  *ptr = 0; ptr++;
+  chksumlen += 2;
+
+  // Copy Identifier to buf (16 bits)
+  memcpy (ptr, &icmphdr.icmp_id, sizeof (icmphdr.icmp_id));
+  ptr += sizeof (icmphdr.icmp_id);
+  chksumlen += sizeof (icmphdr.icmp_id);
+
+  // Copy Sequence Number to buf (16 bits)
+  memcpy (ptr, &icmphdr.icmp_seq, sizeof (icmphdr.icmp_seq));
+  ptr += sizeof (icmphdr.icmp_seq);
+  chksumlen += sizeof (icmphdr.icmp_seq);
+
+  // Copy payload to buf
+  memcpy (ptr, payload, payloadlen);
+  ptr += payloadlen;
+  chksumlen += payloadlen;
+
+  // Pad to the next 16-bit boundary
+  for (i=0; i<payloadlen%2; i++, ptr++) {
+    *ptr = 0;
+    ptr++;
+    chksumlen++;
+  }
+
+  return checksum ((uint16_t *) buf, chksumlen);
+}
+
 char* get_target_ip(char *src_ip) {
 	char *target_ip_adr;
 	char *ip;
@@ -224,59 +365,6 @@ char* get_target_ip(char *src_ip) {
 
 	return target_ip_adr;
 }
-
-eth_header* create_eth_header(char* ether_shost, char* ether_dhost, int ether_type) {
-	eth_header *ethernet;
-	ethernet = (eth_header *)malloc(sizeof(struct sniff_ethernet));
-
-	// Fill Ethernet Header
-	memcpy(ethernet->ether_shost, (void *)ether_aton(ether_shost), 6);
-	memcpy(ethernet->ether_dhost, (void *)ether_aton(ether_dhost), 6);
-	ethernet->ether_type = htons(ether_type);
-
-	return ethernet;
-}
-
-
-/*void send_packet(eth_header *ethernet, arp_header *arp, char *interface) {
-	struct sockaddr_ll sll;
-	struct ifreq ifr;
-	int bytes;
-
-	memset (&sll, 0, sizeof (sll));
-	memset (&ifr, 0, sizeof (ifr));
-
-	bzero(&sll, sizeof(sll));
-	bzero(&ifr, sizeof(ifr));
-
-	strncpy((char *)ifr.ifr_name, interface, IFNAMSIZ);
-	//snprintf(ifr.ifr_name, sizeof(ifr.ifr_name), "%s", interface);
-
-	if((ioctl(RAW, SIOCGIFINDEX, &ifr)) == -1) {
-		submit_log("[%s]\n","Error getting Interface index");
-		exit(EXIT_FAILURE);
-	}
-
-	sll.sll_family = AF_PACKET;
-	sll.sll_ifindex = ifr.ifr_ifindex;
-	sll.sll_protocol = htons(ETH_P_ALL);
-	sll.sll_halen = ETHER_ADDR_LEN;
-	memcpy(sll.sll_addr, arp->tha, ETHER_ADDR_LEN);
-
-	PKT_LEN = sizeof(eth_header) + sizeof(arp_header); // Packet Length
-	PACKET 	= (unsigned  char *)malloc(PKT_LEN); // Allocate Memory for the Packet
-	memcpy(PACKET, ethernet, sizeof(eth_header)); // First Copy Ethernet Header
-	memcpy(PACKET + sizeof(eth_header), arp, sizeof(arp_header)); // Next copy ARP Packet after the Ethernet Packet
-	if((bytes = sendto(RAW, PACKET, PKT_LEN, 0, (struct sockaddr *)&sll, sizeof(sll))) < 0) {
-		submit_log("[%s]\n","Error Sending Packet");
-	} else {
-		submit_log("[%s]\n", "Packet Sent Successfully");
-	}
-
-	free(ethernet);
-	free(arp);
-	free(PACKET);
-}*/
 
 int create_raw_socket(int socket_type) {
 	int raw;

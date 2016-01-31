@@ -20,6 +20,15 @@ echo
 sleep $SLEEP
 
 echo "$LINE"
+echo "$FILE CLEANING NDK ASSETS"
+echo "$LINE"
+rm -vfr ./assets/*
+echo
+echo "$FILE done"
+echo
+sleep $SLEEP
+
+echo "$LINE"
 echo "$FILE ant clean"
 echo "$LINE"
 sleep 1
