@@ -14,6 +14,7 @@ int main(int argc, char **argv) {
 	void *tmp;
 	int c, i, status, datalen, frame_length, sendsd, recvsd, bytes, *ip_flags, timeout, trycount, trylim, done;
 	char *interface, *src_ip, *target_ip, *rec_ip, *rec_mac, *dst_ip, *temp;
+	struct timeval wait;
 
 	src_mac = allocate_ustrmem (ETHER_ADDR_LEN);
 	dst_mac = allocate_ustrmem (ETHER_ADDR_LEN);
@@ -25,8 +26,8 @@ int main(int argc, char **argv) {
 	temp = allocate_strmem(INET_ADDRSTRLEN);
 	dst_ip = allocate_strmem(INET_ADDRSTRLEN);
 	target_ip = allocate_strmem(INET_ADDRSTRLEN);
+	rec_ip = allocate_strmem (INET_ADDRSTRLEN);
 	ip_flags = allocate_intmem(4);
-	done = 0;
 
 	if(argc < 2) {
 		fprintf(stderr, "1. Too Few Arguments\n");
@@ -126,7 +127,82 @@ int main(int argc, char **argv) {
 		trylim = 3;
 		trycount = 0;
 
-		
+		// Cast recv_iphdr as pointer to IPv4 header within received ethernet frame.
+		recv_iphdr = (struct ip *) (recv_ether_frame + ETHER_HDRLEN);
+
+		// Case recv_icmphdr as pointer to ICMP header within received ethernet frame.
+		recv_icmphdr = (struct icmp *) (recv_ether_frame + ETHER_HDRLEN + IP4_HDRLEN);
+
+		done = 0;
+
+		// SEND LOOP STARTS HERE
+		for(;;) {
+
+			// Send ethernet frame to socket.
+			if ((bytes = sendto (sendsd, send_ether_frame, frame_length, 0, (struct sockaddr *) &device, sizeof (device))) <= 0) {
+				perror ("sendto() failed ");
+				exit (EXIT_FAILURE);
+			}
+
+			// Set time for the socket to timeout and give up waiting for a reply.
+		    timeout = 2;
+		    wait.tv_sec  = timeout;  
+		    wait.tv_usec = 0;
+		    setsockopt (recvsd, SOL_SOCKET, SO_RCVTIMEO, (char *) &wait, sizeof (struct timeval));
+
+			// RECEIVE LOOP STARTS HERE
+			for(;;) {
+
+				memset (recv_ether_frame, 0, IP_MAXPACKET * sizeof (uint8_t));
+				memset (&from, 0, sizeof (from));
+				fromlen = sizeof (from);
+				if ((bytes = recvfrom (recvsd, recv_ether_frame, IP_MAXPACKET, 0, (struct sockaddr *) &from, &fromlen)) < 0) {
+
+					status = errno;
+
+					// Deal with error conditions first.
+					if (status == EAGAIN) {  // EAGAIN = 11
+						printf ("No reply within %i seconds.\n", timeout);
+						trycount++;
+						break;  // Break out of Receive loop.
+					} else if (status == EINTR) {  // EINTR = 4
+						continue;  // Something weird happened, but let's keep listening.
+					} else {
+						perror ("recvfrom() failed ");
+						exit (EXIT_FAILURE);
+					}
+				}  // End of error handling conditionals.
+
+				// Check for an IP ethernet frame, carrying ICMP echo reply. If not, ignore and keep listening.
+				if ((((recv_ether_frame[12] << 8) + recv_ether_frame[13]) == ETH_P_IP) &&
+				(recv_iphdr->ip_p == IPPROTO_ICMP) && (recv_icmphdr->icmp_type == ICMP_ECHOREPLY) && (recv_icmphdr->icmp_code == 0)) {
+
+					// Extract source IP address from received ethernet frame.
+					if (inet_ntop (AF_INET, &(recv_iphdr->ip_src.s_addr), rec_ip, INET_ADDRSTRLEN) == NULL) {
+						status = errno;
+						fprintf (stderr, "inet_ntop() failed.\nError message: %s", strerror (status));
+						exit (EXIT_FAILURE);
+					}
+
+					// Report source IPv4 address and time for reply.
+					printf ("%s (%i bytes received)\n", rec_ip, bytes);
+					done = 1;
+					break;  // Break out of Receive loop.
+				}  // End if IP ethernet frame carrying ICMP_ECHOREPLY
+			}
+
+			// The 'done' flag was set because an echo reply was received; break out of send loop.
+			if (done == 1) {
+				break;  // Break out of Send loop.
+			}
+
+			// We ran out of tries, so let's give up.
+			if (trycount == trylim) {
+				submit_log("Recognized 0 echo replies from remote host [%s] after 3 tries.\n", target_ip);
+				break; // Break out of SEND Loop
+			}
+
+		}
 
 
 		if(TARGET_IP == 254) {
