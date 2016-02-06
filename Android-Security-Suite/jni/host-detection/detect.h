@@ -48,6 +48,10 @@
 #define INET_ADDR_STRLEN 16
 #define MAC_ADDR_STRLEN 18
 
+#define TRY_LIMIT 4
+
+#define TIMEOUT 2
+
 #define DEBUG_TAG "\n[ANDROID_SECURITY_SUITE] ===> LIBPCAP_DEBUGGING ======> "
 
 #define TRUE 1

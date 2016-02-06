@@ -12,7 +12,7 @@ int main(int argc, char **argv) {
 	socklen_t fromlen;
 	double dt;
 	void *tmp;
-	int c, i, status, datalen, frame_length, sendsd, recvsd, bytes, *ip_flags, timeout, trycount, trylim, done;
+	int c, i, status, datalen, frame_length, sendsd, recvsd, bytes, *ip_flags, trycount,  done;
 	char *interface, *src_ip, *target_ip, *rec_ip, *rec_mac, *dst_ip, *temp;
 	struct timeval wait;
 
@@ -124,7 +124,6 @@ int main(int argc, char **argv) {
 		}
 
 		// Set maximum number of tries to ping remote host before giving up.
-		trylim = 3;
 		trycount = 0;
 
 		// Cast recv_iphdr as pointer to IPv4 header within received ethernet frame.
@@ -145,8 +144,7 @@ int main(int argc, char **argv) {
 			}
 
 			// Set time for the socket to timeout and give up waiting for a reply.
-		    timeout = 2;
-		    wait.tv_sec  = timeout;  
+		    wait.tv_sec  = TIMEOUT;  
 		    wait.tv_usec = 0;
 		    setsockopt (recvsd, SOL_SOCKET, SO_RCVTIMEO, (char *) &wait, sizeof (struct timeval));
 
@@ -162,7 +160,7 @@ int main(int argc, char **argv) {
 
 					// Deal with error conditions first.
 					if (status == EAGAIN) {  // EAGAIN = 11
-						printf ("No reply within %i seconds.\n", timeout);
+						fprintf (stderr, "No reply From %s within %i seconds.\n", target_ip, TIMEOUT);
 						trycount++;
 						break;  // Break out of Receive loop.
 					} else if (status == EINTR) {  // EINTR = 4
@@ -197,7 +195,7 @@ int main(int argc, char **argv) {
 			}
 
 			// We ran out of tries, so let's give up.
-			if (trycount == trylim) {
+			if (trycount == TRY_LIMIT) {
 				submit_log("Recognized 0 echo replies from remote host [%s] after 3 tries.\n", target_ip);
 				break; // Break out of SEND Loop
 			}
@@ -216,7 +214,11 @@ int main(int argc, char **argv) {
 // IPv4 header
 struct ip build_ip_hdr(int datalen, char *src_ip, char *dst_ip) {
 	struct ip send_iphdr;
-	int *ip_flags, status;
+	int *ip_flags, status, id;
+	time_t t;
+
+	/* Intializes random number generator */
+   	srand((unsigned) time(&t));
 
 	ip_flags = allocate_intmem(4);
 
@@ -233,7 +235,8 @@ struct ip build_ip_hdr(int datalen, char *src_ip, char *dst_ip) {
 	send_iphdr.ip_len = htons (IP4_HDRLEN + ICMP_HDRLEN + datalen);
 
 	// ID sequence number (16 bits): unused, since single datagram
-	send_iphdr.ip_id = htons (0);
+	id = rand() % 9999 + 1;
+	send_iphdr.ip_id = htons (id);
 
 	// Flags, and Fragmentation offset (3, 13 bits): 0 since single datagram
 
@@ -241,7 +244,7 @@ struct ip build_ip_hdr(int datalen, char *src_ip, char *dst_ip) {
 	ip_flags[0] = 0;
 
 	// Do not fragment flag (1 bit)
-	ip_flags[1] = 0;
+	ip_flags[1] = 1;
 
 	// More fragments following flag (1 bit)
 	ip_flags[2] = 0;
@@ -307,13 +310,13 @@ uint8_t* build_ether_frame(int frame_length, uint8_t *src_mac, struct ip send_ip
 	send_ether_frame = allocate_ustrmem (IP_MAXPACKET);
 	dst_mac = allocate_ustrmem (ETHER_ADDR_LEN);
 
-	 // Set destination MAC address: you need to fill these out
-	dst_mac[0] = 0xff;
-	dst_mac[1] = 0xff;
-	dst_mac[2] = 0xff;
-	dst_mac[3] = 0xff;
-	dst_mac[4] = 0xff;
-	dst_mac[5] = 0xff;
+	// Set destination MAC address: you need to fill these out
+	dst_mac[0] = 0xFF;
+	dst_mac[1] = 0xFF;
+	dst_mac[2] = 0xFF;
+	dst_mac[3] = 0xFF;
+	dst_mac[4] = 0xFF;
+	dst_mac[5] = 0xFF;
 
 	// Destination and Source MAC addresses
 	memcpy (send_ether_frame, dst_mac, 6);
