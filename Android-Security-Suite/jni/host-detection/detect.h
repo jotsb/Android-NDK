@@ -83,6 +83,7 @@ char ROUTER_MAC_ADDR[MAC_ADDR_STRLEN] = "50:39:55:63:17:b4";
 char BROADCAST_MAC_ADDR[MAC_ADDR_STRLEN] = "00:00:00:00:00:00";
 
 int TARGET_IP = 1;
+int SEQ_NUM = 1;
 
 int PKT_LEN;
 unsigned char *PACKET;
@@ -95,7 +96,7 @@ void print_mac_addr(uint8_t *mac);
 uint8_t* get_mac_addr(int socket, char *interface);
 char* get_ip_addr(int socket, char *interface);
 char* get_target_ip(char *src_ip);
-uint16_t checksum (uint16_t *addr, int len);
+uint16_t ipv4_checksum (uint16_t *addr, int len);
 uint16_t icmp4_checksum (struct icmp icmphdr, uint8_t *payload, int payloadlen);
 struct ip build_ip_hdr(int datalen, char *src_ip, char *dst_ip);
 struct icmp build_icmp_hdr(uint8_t *data, int datalen);

@@ -107,6 +107,7 @@ int main(int argc, char **argv) {
 		}
 		freeaddrinfo (res);
 
+/*
 		send_iphdr = build_ip_hdr(datalen, src_ip, dst_ip);
 		send_icmphdr = build_icmp_hdr(data, datalen);
 		
@@ -132,10 +133,36 @@ int main(int argc, char **argv) {
 		// Case recv_icmphdr as pointer to ICMP header within received ethernet frame.
 		recv_icmphdr = (struct icmp *) (recv_ether_frame + ETHER_HDRLEN + IP4_HDRLEN);
 
+*/
+		// Set maximum number of tries to ping remote host before giving up.
+		trycount = 0;
 		done = 0;
+		SEQ_NUM = 1;
 
 		// SEND LOOP STARTS HERE
 		for(;;) {
+
+			send_iphdr = build_ip_hdr(datalen, src_ip, dst_ip);
+			send_icmphdr = build_icmp_hdr(data, datalen);
+			
+			// Fill out ethernet frame header.
+
+			// Ethernet frame length = ethernet header (MAC + MAC + ethernet type) + ethernet data (IP header + ICMP header + ICMP data)
+			frame_length = ETHER_HDRLEN + IP4_HDRLEN + ICMP_HDRLEN + datalen;
+
+			send_ether_frame = build_ether_frame(frame_length, src_mac, send_iphdr, send_icmphdr, data, datalen);
+
+			// Submit request for a raw socket descriptor to receive packets.
+			if ((recvsd = socket (PF_PACKET, SOCK_RAW, htons (ETH_P_ALL))) < 0) {
+				perror ("socket() failed to obtain a receive socket descriptor ");
+				exit (EXIT_FAILURE);
+			}
+
+			// Cast recv_iphdr as pointer to IPv4 header within received ethernet frame.
+			recv_iphdr = (struct ip *) (recv_ether_frame + ETHER_HDRLEN);
+
+			// Case recv_icmphdr as pointer to ICMP header within received ethernet frame.
+			recv_icmphdr = (struct icmp *) (recv_ether_frame + ETHER_HDRLEN + IP4_HDRLEN);
 
 			// Send ethernet frame to socket.
 			if ((bytes = sendto (sendsd, send_ether_frame, frame_length, 0, (struct sockaddr *) &device, sizeof (device))) <= 0) {
@@ -211,6 +238,43 @@ int main(int argc, char **argv) {
 	return 0;
 }
 
+// Frame
+uint8_t* build_ether_frame(int frame_length, uint8_t *src_mac, struct ip send_iphdr, struct icmp send_icmphdr, uint8_t *data, int datalen) {
+	uint8_t *send_ether_frame, *dst_mac;
+	send_ether_frame = allocate_ustrmem (IP_MAXPACKET);
+	dst_mac = allocate_ustrmem (ETHER_ADDR_LEN);
+
+	// Set destination MAC address: you need to fill these out
+	dst_mac[0] = 0xFF;
+	dst_mac[1] = 0xFF;
+	dst_mac[2] = 0xFF;
+	dst_mac[3] = 0xFF;
+	dst_mac[4] = 0xFF;
+	dst_mac[5] = 0xFF;
+
+	// Destination and Source MAC addresses
+	memcpy (send_ether_frame, dst_mac, 6);
+	memcpy (send_ether_frame + 6, src_mac, 6);
+
+	// Next is ethernet type code (ETH_P_IP for IPv4).
+	// http://www.iana.org/assignments/ethernet-numbers
+	send_ether_frame[12] = ETH_P_IP / 256;
+	send_ether_frame[13] = ETH_P_IP % 256;
+
+	// Next is ethernet frame data (IPv4 header + ICMP header + ICMP data).
+
+	// IPv4 header
+	memcpy (send_ether_frame + ETHER_HDRLEN, &send_iphdr, IP4_HDRLEN);
+
+	// ICMP header
+	memcpy (send_ether_frame + ETHER_HDRLEN + IP4_HDRLEN, &send_icmphdr, ICMP_HDRLEN);
+
+	// ICMP data
+	memcpy (send_ether_frame + ETHER_HDRLEN + IP4_HDRLEN + ICMP_HDRLEN, data, datalen);
+
+	return send_ether_frame;
+}
+
 // IPv4 header
 struct ip build_ip_hdr(int datalen, char *src_ip, char *dst_ip) {
 	struct ip send_iphdr;
@@ -258,7 +322,7 @@ struct ip build_ip_hdr(int datalen, char *src_ip, char *dst_ip) {
 	                  +  ip_flags[3]);
 
 	// Time-to-Live (8 bits): default to maximum value
-	send_iphdr.ip_ttl = 255;
+	send_iphdr.ip_ttl = 64;
 
 	// Transport layer protocol (8 bits): 1 for ICMP
 	send_iphdr.ip_p = IPPROTO_ICMP;
@@ -277,7 +341,7 @@ struct ip build_ip_hdr(int datalen, char *src_ip, char *dst_ip) {
 
 	// IPv4 header checksum (16 bits): set to 0 when calculating checksum
 	send_iphdr.ip_sum = 0;
-	send_iphdr.ip_sum = checksum ((uint16_t *) &send_iphdr, IP4_HDRLEN);
+	send_iphdr.ip_sum = ipv4_checksum ((uint16_t *) &send_iphdr, IP4_HDRLEN);
 
 	return send_iphdr;
 }
@@ -296,7 +360,8 @@ struct icmp build_icmp_hdr(uint8_t *data, int datalen) {
 	send_icmphdr.icmp_id = htons (1000);
 
 	// Sequence Number (16 bits): starts at 0
-	send_icmphdr.icmp_seq = htons (0);
+	send_icmphdr.icmp_seq = htons (SEQ_NUM);
+	SEQ_NUM++;
 
 	// ICMP header checksum (16 bits): set to 0 when calculating checksum
 	send_icmphdr.icmp_cksum = icmp4_checksum (send_icmphdr, data, datalen);
@@ -304,44 +369,7 @@ struct icmp build_icmp_hdr(uint8_t *data, int datalen) {
 	return send_icmphdr;
 }
 
-// Frame
-uint8_t* build_ether_frame(int frame_length, uint8_t *src_mac, struct ip send_iphdr, struct icmp send_icmphdr, uint8_t *data, int datalen) {
-	uint8_t *send_ether_frame, *dst_mac;
-	send_ether_frame = allocate_ustrmem (IP_MAXPACKET);
-	dst_mac = allocate_ustrmem (ETHER_ADDR_LEN);
-
-	// Set destination MAC address: you need to fill these out
-	dst_mac[0] = 0xFF;
-	dst_mac[1] = 0xFF;
-	dst_mac[2] = 0xFF;
-	dst_mac[3] = 0xFF;
-	dst_mac[4] = 0xFF;
-	dst_mac[5] = 0xFF;
-
-	// Destination and Source MAC addresses
-	memcpy (send_ether_frame, dst_mac, 6);
-	memcpy (send_ether_frame + 6, src_mac, 6);
-
-	// Next is ethernet type code (ETH_P_IP for IPv4).
-	// http://www.iana.org/assignments/ethernet-numbers
-	send_ether_frame[12] = ETH_P_IP / 256;
-	send_ether_frame[13] = ETH_P_IP % 256;
-
-	// Next is ethernet frame data (IPv4 header + ICMP header + ICMP data).
-
-	// IPv4 header
-	memcpy (send_ether_frame + ETHER_HDRLEN, &send_iphdr, IP4_HDRLEN);
-
-	// ICMP header
-	memcpy (send_ether_frame + ETHER_HDRLEN + IP4_HDRLEN, &send_icmphdr, ICMP_HDRLEN);
-
-	// ICMP data
-	memcpy (send_ether_frame + ETHER_HDRLEN + IP4_HDRLEN + ICMP_HDRLEN, data, datalen);
-
-	return send_ether_frame;
-}
-
-uint16_t checksum (uint16_t *addr, int len) {
+uint16_t ipv4_checksum (uint16_t *addr, int len) {
   int count = len;
   register uint32_t sum = 0;
   uint16_t answer = 0;
@@ -417,7 +445,7 @@ uint16_t icmp4_checksum (struct icmp icmphdr, uint8_t *payload, int payloadlen) 
     chksumlen++;
   }
 
-  return checksum ((uint16_t *) buf, chksumlen);
+  return ipv4_checksum ((uint16_t *) buf, chksumlen);
 }
 
 char* get_target_ip(char *src_ip) {
