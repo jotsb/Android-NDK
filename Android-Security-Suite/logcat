@@ -16,7 +16,9 @@ echo "$LINE"
 echo "$FILE adb logcat -c"
 adb logcat -c
 echo
-sleep 1
+#sleep 1
+
+clear
 
 echo "$LINE"
 echo "$FILE RUNNING LOGCAT"
