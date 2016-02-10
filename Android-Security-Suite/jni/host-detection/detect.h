@@ -50,7 +50,7 @@
 
 #define TRY_LIMIT 4
 
-#define TIMEOUT 2
+#define TIMEOUT 1
 
 #define DEBUG_TAG "\n[ANDROID_SECURITY_SUITE] ===> LIBPCAP_DEBUGGING ======> "
 
@@ -84,6 +84,7 @@ char BROADCAST_MAC_ADDR[MAC_ADDR_STRLEN] = "00:00:00:00:00:00";
 
 int TARGET_IP = 1;
 int SEQ_NUM = 1;
+int FINAL_TARGET_IP = 254;
 
 int PKT_LEN;
 unsigned char *PACKET;
@@ -101,6 +102,7 @@ uint16_t icmp4_checksum (struct icmp icmphdr, uint8_t *payload, int payloadlen);
 struct ip build_ip_hdr(int datalen, char *src_ip, char *dst_ip);
 struct icmp build_icmp_hdr(uint8_t *data, int datalen);
 uint8_t* build_ether_frame(int frame_length, uint8_t *src_mac, struct ip send_iphdr, struct icmp send_icmphdr, uint8_t *data, int datalen);
+void *capture_packets(void *arg);
 
 //P.D. Buchan (pdbuchan@yahoo.com)
 uint8_t *allocate_ustrmem (int len);
