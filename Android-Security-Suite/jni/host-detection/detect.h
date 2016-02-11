@@ -56,7 +56,7 @@
 
 #define TRUE 1
 
-#define CONFIG_FILE_LOC "/storage/emulated/0/com.ndk.android-security-suite/arp-exec"
+#define FILE_LOC "/storage/emulated/0/com.ndk.android-security-suite/active-devices"
 
 // Ethernet header 
 typedef struct sniff_ethernet {
@@ -103,6 +103,7 @@ struct ip build_ip_hdr(int datalen, char *src_ip, char *dst_ip);
 struct icmp build_icmp_hdr(uint8_t *data, int datalen);
 uint8_t* build_ether_frame(int frame_length, uint8_t *src_mac, struct ip send_iphdr, struct icmp send_icmphdr, uint8_t *data, int datalen);
 void *capture_packets(void *arg);
+int write_to_file(char *recv_ip, char *recv_mac);
 
 //P.D. Buchan (pdbuchan@yahoo.com)
 uint8_t *allocate_ustrmem (int len);

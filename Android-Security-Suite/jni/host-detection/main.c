@@ -18,6 +18,9 @@ int main(int argc, char **argv) {
 	int c, i, status, datalen, frame_length, sendsd, recvsd, bytes, *ip_flags, trycount, done, rc;
 	char *interface, *src_ip, *rec_ip, *rec_mac, *dst_ip, *temp;
 	pthread_t recv_thread;
+	FILE *fp;
+
+	fp = fopen(FILE_LOC, "w");
 	
 
 	src_mac = allocate_ustrmem (ETHER_ADDR_LEN);
@@ -116,7 +119,7 @@ int main(int argc, char **argv) {
 		}
 		freeaddrinfo (res);
 
-/*
+		/*
 		send_iphdr = build_ip_hdr(datalen, src_ip, dst_ip);
 		send_icmphdr = build_icmp_hdr(data, datalen);
 		
@@ -141,7 +144,7 @@ int main(int argc, char **argv) {
 
 		// Case recv_icmphdr as pointer to ICMP header within received ethernet frame.
 		recv_icmphdr = (struct icmp *) (recv_ether_frame + ETHER_HDRLEN + IP4_HDRLEN);
-*/
+		*/
 
 		// Set maximum number of tries to ping remote host before giving up.
 		trycount = 0;
@@ -198,6 +201,7 @@ void *capture_packets(void *arg) {
   	struct sockaddr from;
 	socklen_t fromlen;
 	char *rec_ip, *rec_mac;
+	FILE *fp;
 
 
   	recv_ether_frame = allocate_ustrmem (IP_MAXPACKET);
@@ -256,10 +260,24 @@ void *capture_packets(void *arg) {
 
 			// Report source IPv4 address and time for reply.
 			//fprintf (stdout, "IP = %s (%i bytes received)\n", rec_ip, bytes);
-			printf ("IP = %s, MAC = %s (%i bytes received)\n", rec_ip, rec_mac, bytes);
+			fprintf (stdout, "IP = %s, MAC = %s (%i bytes received)\n", rec_ip, rec_mac, bytes);
+			write_to_file(rec_ip, rec_mac);
 			//done = 1;
 		}  // End if IP ethernet frame carrying ICMP_ECHOREPLY
     }
+}
+
+// write IP:MAC to the file
+int write_to_file(char *recv_ip, char *recv_mac) {
+	FILE *fp;
+
+	fp = fopen(FILE_LOC, "a");
+
+	fprintf(fp, "%s:%s\n", recv_ip, recv_mac);
+
+	fclose(fp);
+
+	return 0;
 }
 
 // Frame
