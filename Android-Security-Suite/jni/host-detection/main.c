@@ -185,7 +185,7 @@ int main(int argc, char **argv) {
 		}
 	}
 
-	sleep(10);
+	sleep(TURN_OFF_TIMEOUT);
 
 	return 0;
 }
@@ -248,7 +248,7 @@ void *capture_packets(void *arg) {
 		if ((((recv_ether_frame[12] << 8) + recv_ether_frame[13]) == ETH_P_IP) &&
 		(recv_iphdr->ip_p == IPPROTO_ICMP) && (recv_icmphdr->icmp_type == ICMP_ECHOREPLY) && (recv_icmphdr->icmp_code == 0)) {
 
-			// Extract source IP address from received ethernet frame.
+			// Extract source IP address from received ethernet frame
 			if (inet_ntop (AF_INET, &(recv_iphdr->ip_src.s_addr), rec_ip, INET_ADDRSTRLEN) == NULL) {
 				status = errno;
 				fprintf (stderr, "inet_ntop() failed.\nError message: %s", strerror (status));
@@ -269,13 +269,34 @@ void *capture_packets(void *arg) {
 
 // write IP:MAC to the file
 int write_to_file(char *recv_ip, char *recv_mac) {
-	FILE *fp;
+	FILE *fp_read, *fp_write;
+	char *token;
+	int device_exists = 0;
 
-	fp = fopen(FILE_LOC, "a");
+	// read the file to see if the entry exists
+	fp_read = fopen(FILE_LOC, "r");
+	if(fp_read != NULL) {
+		char line[128];
+		while(fgets(line, sizeof(line), fp_read) != NULL) {
+			token = strtok(line, ":");
+			if(strcmp(recv_ip, token) == 0) {
+				device_exists = 1; // device already exists in the file
+				break;
+			}
+		}
 
-	fprintf(fp, "%s:%s\n", recv_ip, recv_mac);
+		fclose(fp_read); // Close the file for Reading
+	}
 
-	fclose(fp);
+	// device doesn't exist in the file
+	if(device_exists == 0) {
+		// write to the file
+		fp_write = fopen(FILE_LOC, "a");
+		fprintf(fp_write, "%s:%s\n", recv_ip, recv_mac);
+		fclose(fp_write);
+	}
+
+	
 
 	return 0;
 }

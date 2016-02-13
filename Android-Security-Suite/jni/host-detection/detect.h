@@ -52,6 +52,8 @@
 
 #define TIMEOUT 1
 
+#define TURN_OFF_TIMEOUT 50
+
 #define DEBUG_TAG "\n[ANDROID_SECURITY_SUITE] ===> LIBPCAP_DEBUGGING ======> "
 
 #define TRUE 1
@@ -85,6 +87,7 @@ char BROADCAST_MAC_ADDR[MAC_ADDR_STRLEN] = "00:00:00:00:00:00";
 int TARGET_IP = 1;
 int SEQ_NUM = 1;
 int FINAL_TARGET_IP = 254;
+
 
 int PKT_LEN;
 unsigned char *PACKET;
