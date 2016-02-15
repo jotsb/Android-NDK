@@ -31,6 +31,7 @@
 #include <netinet/in.h>       // IPPROTO_ICMP, INET_ADDRSTRLEN
 #include <netinet/ip.h>       // struct ip and IP_MAXPACKET (which is 65535)
 #include <netinet/ip_icmp.h>  // struct icmp, ICMP_ECHO
+#include <netinet/tcp.h>      // struct tcphdr
 #include <pcap.h>
 #include <arpa/inet.h>
 
@@ -49,16 +50,13 @@
 #define MAC_ADDR_STRLEN 18
 
 #define TRY_LIMIT 4
-
 #define TIMEOUT 1
-
 #define TURN_OFF_TIMEOUT 50
-
 #define DEBUG_TAG "\n[ANDROID_SECURITY_SUITE] ===> LIBPCAP_DEBUGGING ======> "
-
 #define TRUE 1
-
 #define FILE_LOC "/storage/emulated/0/com.ndk.android-security-suite/active-devices"
+#define ICMP_PKT 0
+#define TCP_PKT 6
 
 // Ethernet header 
 typedef struct sniff_ethernet {
@@ -66,6 +64,14 @@ typedef struct sniff_ethernet {
         u_char ether_shost[ETHER_ADDR_LEN];     // Source host address 
         u_short ether_type;                     // IP? ARP? RARP? etc 
 }eth_header;
+
+typedef struct tcp_frame {
+    uint8_t *src_mac;
+    char *src_ip;
+    char *dst_ip;
+    uint8_t *data;
+    int datalen;
+} tcp_frame_struct;
 
 
 // Global Variables
@@ -89,23 +95,34 @@ int SEQ_NUM = 1;
 int FINAL_TARGET_IP = 254;
 
 
+
 int PKT_LEN;
 unsigned char *PACKET;
 
 // Function Definitions
-int create_raw_socket(int socket_type);
+
 int submit_log(char *msgType, char *string);
 int submit_log_i(char *msgType, int value);
+
+
 void print_mac_addr(uint8_t *mac);
 uint8_t* get_mac_addr(int socket, char *interface);
 char* get_ip_addr(int socket, char *interface);
 char* get_target_ip(char *src_ip);
+
+
 uint16_t ipv4_checksum (uint16_t *addr, int len);
 uint16_t icmp4_checksum (struct icmp icmphdr, uint8_t *payload, int payloadlen);
-struct ip build_ip_hdr(int datalen, char *src_ip, char *dst_ip);
+uint16_t tcp4_checksum (struct ip iphdr, struct tcphdr tcphdr, uint8_t *payload, int payloadlen);
+
+int create_raw_socket(int socket_type);
+struct ip build_ip_hdr(int datalen, char *src_ip, char *dst_ip, int type);
 struct icmp build_icmp_hdr(uint8_t *data, int datalen);
 uint8_t* build_ether_frame(int frame_length, uint8_t *src_mac, struct ip send_iphdr, struct icmp send_icmphdr, uint8_t *data, int datalen);
+int build_tcp_frame(uint8_t *snd_ether_frame, uint8_t *src_mac, char *src_ip, char *dst_ip, uint8_t *data, int datalen);
+
 void *capture_packets(void *arg);
+void *start_tcp_scan(void *arg);
 int write_to_file(char *recv_ip, char *recv_mac);
 
 //P.D. Buchan (pdbuchan@yahoo.com)
