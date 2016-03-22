@@ -24,7 +24,7 @@ echo "$LINE"
 echo "$FILE RUNNING LOGCAT"
 echo "$LINE"
 echo "$FILE adb logcat -v time *:V | grep -i ANDROID_SECURITY_SUITE"
-adb logcat -v time *:V | grep ANDROID_SECURITY_SUITE
+adb logcat -v time *:V | grep -i ANDROID_SECURITY_SUITE
 echo
 
 

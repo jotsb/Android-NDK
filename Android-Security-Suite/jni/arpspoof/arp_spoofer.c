@@ -149,10 +149,10 @@ int main(int argc, char **argv) {
 	if(argc < 2) {
 		fprintf(stderr, "Too Few Arguments\n");
 		fprintf(stderr, "Option -%c requires an argument.\n", optopt);
-        fprintf(stderr, "[USAGE] => %s -i \"[wlan0 or etho0]\" \n", argv[0]);
+        fprintf(stderr, "[USAGE] => %s -i \"[wlan0 or etho0]\" \n-r \"{ROUTER_IP:ROUTER_MAC}\" \n-t \"{TARGET1_IP:TARGET1_MAC},{TARGET2_IP:TARGET2_MAC}\" \n", argv[0]);
         return 1;
 	} else {
-		while((c = getopt (argc, argv, "i:u")) != -1) {
+		while((c = getopt (argc, argv, "i:ur:t:")) != -1) {
             switch(c) {
                 case 'i':
                     interface = optarg;

@@ -17,5 +17,9 @@
     <string name="start_capture">Start Capture</string>
     <string name="stop_capture">Stop Capture</string>
     <string name="title_activity_packet_details">PacketDetailsActivity</string>
+    <string name="scan">Scan</string>
+    <string name="select_the_router_device">Select the Router</string>
+    <string name="select_target_device">Select the Target machine</string>
+    <string name="spoof">Spoof</string>
 
 </resources>

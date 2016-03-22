@@ -36,15 +36,13 @@
 #include <arpa/inet.h>
 
 
-// ethernet headers are always exactly 14 bytes [1] 
 #undef ETHER_HDRLEN
-#define ETHER_HDRLEN 14
+#define ETHER_HDRLEN 14     // ethernet headers are always exactly 14 bytes [1] 
 
-// Ethernet addresses are 6 bytes
-#define ETHER_ADDR_LEN  6
-
-#define IP4_HDRLEN 20  // IPv4 header length
-#define ICMP_HDRLEN 8  // ICMP header length for echo request, excludes data
+#define ETHER_ADDR_LEN  6   // Ethernet addresses are 6 bytes
+#define TCP_HDRLEN 20       // TCP header length, excludes options data
+#define IP4_HDRLEN 20       // IPv4 header length
+#define ICMP_HDRLEN 8       // ICMP header length for echo request, excludes data
 
 #define INET_ADDR_STRLEN 16
 #define MAC_ADDR_STRLEN 18
@@ -71,6 +69,8 @@ typedef struct tcp_frame {
     char *dst_ip;
     uint8_t *data;
     int datalen;
+    int sendsd;
+    struct sockaddr_ll device;
 } tcp_frame_struct;
 
 
@@ -119,7 +119,7 @@ int create_raw_socket(int socket_type);
 struct ip build_ip_hdr(int datalen, char *src_ip, char *dst_ip, int type);
 struct icmp build_icmp_hdr(uint8_t *data, int datalen);
 uint8_t* build_ether_frame(int frame_length, uint8_t *src_mac, struct ip send_iphdr, struct icmp send_icmphdr, uint8_t *data, int datalen);
-int build_tcp_frame(uint8_t *snd_ether_frame, uint8_t *src_mac, char *src_ip, char *dst_ip, uint8_t *data, int datalen);
+int build_tcp_frame(uint8_t *send_ether_frame, uint8_t *src_mac, char *src_ip, char *dst_ip, uint8_t *data, int datalen);
 
 void *capture_packets(void *arg);
 void *start_tcp_scan(void *arg);

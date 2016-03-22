@@ -170,6 +170,32 @@ public abstract class RootAccess {
 
 		return retVal;
 	}
+	
+	public static String runShellCommand(String cmd) {
+		String retVal = null;
+		java.lang.Process suProcess;
+		
+		try {
+			suProcess = Runtime.getRuntime().exec("su\n");
+			DataOutputStream executeCmd = new DataOutputStream(suProcess.getOutputStream());
+			DataInputStream readOutput = new DataInputStream(suProcess.getInputStream());
+			if(executeCmd != null && readOutput != null) {
+				executeCmd.writeBytes(cmd + "\n");
+				executeCmd.flush();
+				
+				retVal = readOutput.readUTF();
+				Log.i(LOG_TAG, "Interface Name: " + retVal);
+				if(retVal != null) {
+					executeCmd.writeBytes("exit\n");
+					executeCmd.flush();
+				}
+			}
+		} catch (Exception e) {
+			Log.e(LOG_TAG + "moveToBin()", "Unable to move the file [" + e.getClass().getName() + "] : ", e);
+		}
+		
+		return retVal;
+	}
 
 	/**
 	 * Method used to run multiple Shell Commands at once.

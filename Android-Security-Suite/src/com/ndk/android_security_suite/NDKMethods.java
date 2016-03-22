@@ -5,6 +5,8 @@ import java.util.ArrayList;
 public class NDKMethods extends RootAccess {
 
 	private final static String NDK_LOCATION = "/data/app/android-security-suite/";
+	
+	private static String interface_name;
 
 	public static void start_capture(final String filter) {
 		Thread t1 = new Thread(new Runnable() {
@@ -34,6 +36,18 @@ public class NDKMethods extends RootAccess {
 			}
 		});
 		t1.start();
+	}
+	
+	public static String get_lan_devices(final String ip_address) {
+		Thread t1 = new Thread(new Runnable() {
+			@Override
+			public void run() {
+				//"netcfg | grep " + ip + " | awk '{print $1}';"
+				interface_name = runShellCommand("netcfg | grep " + ip_address + " | awk \'{print $1}\' > /storage/emulated/0/com.ndk.android-security-suite/test");
+			}
+		});
+		
+		return interface_name;
 	}
 
 	/*

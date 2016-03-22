@@ -4,7 +4,7 @@
 char *target_ip;
 
 int main(int argc, char **argv) {
-	uint8_t *src_mac, *dst_mac, *data, *send_ether_frame, *recv_ether_frame;
+	uint8_t *src_mac, *dst_mac, *data, *send_ether_frame, *recv_ether_frame, *send_tcp_ether_frame, *recv_tcp_ether_frame;
 	struct ip send_iphdr, *recv_iphdr;
   	struct icmp send_icmphdr, *recv_icmphdr;
   	struct addrinfo hints, *res;
@@ -21,20 +21,22 @@ int main(int argc, char **argv) {
 	FILE *fp;
 	tcp_frame_struct tcp_frame;
 
-	fp = fopen(FILE_LOC, "w");
+	fp 						= fopen(FILE_LOC, "w");
 	
 
-	src_mac = allocate_ustrmem (ETHER_ADDR_LEN);
-	dst_mac = allocate_ustrmem (ETHER_ADDR_LEN);
-	send_ether_frame = allocate_ustrmem (IP_MAXPACKET);
-	data = allocate_ustrmem (IP_MAXPACKET);
-	interface = allocate_strmem (40);
-	src_ip = allocate_strmem(INET_ADDRSTRLEN);
-	temp = allocate_strmem(INET_ADDRSTRLEN);
-	dst_ip = allocate_strmem(INET_ADDRSTRLEN);
-	target_ip = allocate_strmem(INET_ADDRSTRLEN);
-	
-	ip_flags = allocate_intmem(4);
+	src_mac 				= allocate_ustrmem (ETHER_ADDR_LEN);
+	dst_mac 				= allocate_ustrmem (ETHER_ADDR_LEN);
+	send_ether_frame 		= allocate_ustrmem (IP_MAXPACKET);
+	send_tcp_ether_frame 	= allocate_ustrmem (IP_MAXPACKET);
+	data 					= allocate_ustrmem (IP_MAXPACKET);
+	interface 				= allocate_strmem (40);
+	src_ip 					= allocate_strmem(INET_ADDRSTRLEN);
+	temp 					= allocate_strmem(INET_ADDRSTRLEN);
+	dst_ip 					= allocate_strmem(INET_ADDRSTRLEN);
+	target_ip 				= allocate_strmem(INET_ADDRSTRLEN);
+	ip_flags 				= allocate_intmem(4);
+
+	sendsd 					= create_raw_socket(ETH_P_ALL);
 
 	if(argc < 2) {
 		fprintf(stderr, "1. Too Few Arguments\n");
@@ -61,7 +63,7 @@ int main(int argc, char **argv) {
         }
 	}
 
-	sendsd = create_raw_socket(ETH_P_ALL);
+	
 	memcpy(src_mac, get_mac_addr(sendsd, interface), ETHER_ADDR_LEN);
 
 	// Find interface index from interface name and store index in
@@ -94,10 +96,12 @@ int main(int argc, char **argv) {
 	src_ip = get_ip_addr(sendsd, interface);
 	submit_log("SRC IP [%s]", src_ip);
 
-	tcp_frame.datalen = datalen;
-	tcp_frame.data = data;
-	tcp_frame.src_mac = src_mac;
-	tcp_frame.src_ip = src_ip;
+	// tcp_frame.datalen = datalen;
+	// tcp_frame.data = data;
+	// tcp_frame.src_mac = src_mac;
+	// tcp_frame.src_ip = src_ip;
+	// tcp_frame.sendsd = sendsd;
+	// tcp_frame.device = device;
 
 	rc = pthread_create(&recv_thread, NULL, capture_packets, (void*)0);
 	if(rc) {
@@ -110,14 +114,6 @@ int main(int argc, char **argv) {
 		strcpy(temp, src_ip);
 		strcpy(target_ip, get_target_ip(temp)); // Destination IPv4 address
 		submit_log("TARGET IP [%s]", target_ip);
-
-		tcp_frame.dst_ip = target_ip;
-
-		rc = pthread_create(&tcp_thread, NULL, start_tcp_scan, &tcp_frame);
-		if(rc) {
-			submit_log_i("3.2 ERROR; Return code from PTHREAD_CREATE() is %d\n", rc);
-			exit(EXIT_FAILURE);
-		}
 
 		// Resolve target using getaddrinfo().
 		if ((status = getaddrinfo (target_ip, NULL, &hints, &res)) != 0) {
@@ -133,32 +129,40 @@ int main(int argc, char **argv) {
 		}
 		freeaddrinfo (res);
 
-		/*
-			send_iphdr = build_ip_hdr(datalen, src_ip, dst_ip);
-			send_icmphdr = build_icmp_hdr(data, datalen);
-			
-			// Fill out ethernet frame header.
+		// TCP THREAD
+		// tcp_frame.dst_ip = dst_ip;
+		// rc = pthread_create(&tcp_thread, NULL, start_tcp_scan, &tcp_frame);
+		// if(rc) {
+		// 	submit_log_i("3.2 ERROR; Return code from PTHREAD_CREATE() is %d\n", rc);
+		// 	exit(EXIT_FAILURE);
+		// }
 
-			// Ethernet frame length = ethernet header (MAC + MAC + ethernet type) + ethernet data (IP header + ICMP header + ICMP data)
-			frame_length = ETHER_HDRLEN + IP4_HDRLEN + ICMP_HDRLEN + datalen;
+	
+		// send_iphdr = build_ip_hdr(datalen, src_ip, dst_ip);
+		// send_icmphdr = build_icmp_hdr(data, datalen);
+		
+		// // Fill out ethernet frame header.
 
-			send_ether_frame = build_ether_frame(frame_length, src_mac, send_iphdr, send_icmphdr, data, datalen);
+		// // Ethernet frame length = ethernet header (MAC + MAC + ethernet type) + ethernet data (IP header + ICMP header + ICMP data)
+		// frame_length = ETHER_HDRLEN + IP4_HDRLEN + ICMP_HDRLEN + datalen;
 
-			// Submit request for a raw socket descriptor to receive packets.
-			if ((recvsd = socket (PF_PACKET, SOCK_RAW, htons (ETH_P_ALL))) < 0) {
-				perror ("socket() failed to obtain a receive socket descriptor ");
-				exit (EXIT_FAILURE);
-			}
+		// send_ether_frame = build_ether_frame(frame_length, src_mac, send_iphdr, send_icmphdr, data, datalen);
 
-			// Set maximum number of tries to ping remote host before giving up.
-			trycount = 0;
+		// // Submit request for a raw socket descriptor to receive packets.
+		// if ((recvsd = socket (PF_PACKET, SOCK_RAW, htons (ETH_P_ALL))) < 0) {
+		// 	perror ("socket() failed to obtain a receive socket descriptor ");
+		// 	exit (EXIT_FAILURE);
+		// }
 
-			// Cast recv_iphdr as pointer to IPv4 header within received ethernet frame.
-			recv_iphdr = (struct ip *) (recv_ether_frame + ETHER_HDRLEN);
+		// // Set maximum number of tries to ping remote host before giving up.
+		// trycount = 0;
 
-			// Case recv_icmphdr as pointer to ICMP header within received ethernet frame.
-			recv_icmphdr = (struct icmp *) (recv_ether_frame + ETHER_HDRLEN + IP4_HDRLEN);
-		*/
+		// // Cast recv_iphdr as pointer to IPv4 header within received ethernet frame.
+		// recv_iphdr = (struct ip *) (recv_ether_frame + ETHER_HDRLEN);
+
+		// // Case recv_icmphdr as pointer to ICMP header within received ethernet frame.
+		// recv_icmphdr = (struct icmp *) (recv_ether_frame + ETHER_HDRLEN + IP4_HDRLEN);
+	
 
 		// Set maximum number of tries to ping remote host before giving up.
 		trycount = 0;
@@ -179,9 +183,15 @@ int main(int argc, char **argv) {
 			frame_length = ETHER_HDRLEN + IP4_HDRLEN + ICMP_HDRLEN + datalen;
 
 			send_ether_frame = build_ether_frame(frame_length, src_mac, send_iphdr, send_icmphdr, data, datalen);
+			build_tcp_frame(send_tcp_ether_frame, src_mac, src_ip, dst_ip, data, datalen);
 
 			// Send ethernet frame to socket.
 			if ((bytes = sendto (sendsd, send_ether_frame, frame_length, 0, (struct sockaddr *) &device, sizeof (device))) <= 0) {
+				perror ("sendto() failed ");
+				exit (EXIT_FAILURE);
+			}
+
+			if ((bytes = sendto (sendsd, send_tcp_ether_frame, frame_length, 0, (struct sockaddr *) &device, sizeof (device))) <= 0) {
 				perror ("sendto() failed ");
 				exit (EXIT_FAILURE);
 			}
@@ -192,6 +202,8 @@ int main(int argc, char **argv) {
 			if (trycount == TRY_LIMIT) {
 				break; // Break out of SEND Loop
 			}
+
+			usleep(50000);
 		}
 
 		if(TARGET_IP == FINAL_TARGET_IP) {
@@ -199,8 +211,8 @@ int main(int argc, char **argv) {
 		}
 	}
 
-	sleep(TURN_OFF_TIMEOUT);
-
+	pthread_join(tcp_thread, NULL);
+	
 	return 0;
 }
 
@@ -274,7 +286,7 @@ void *capture_packets(void *arg) {
 
 			// Report source IPv4 address and time for reply.
 			//fprintf (stdout, "IP = %s (%i bytes received)\n", rec_ip, bytes);
-			fprintf (stdout, "IP = %s, MAC = %s (%i bytes received)\n", rec_ip, rec_mac, bytes);
+			//fprintf (stdout, "IP = %s, MAC = %s (%i bytes received)\n", rec_ip, rec_mac, bytes);
 			write_to_file(rec_ip, rec_mac);
 			//done = 1;
 		}  // End if IP ethernet frame carrying ICMP_ECHOREPLY
@@ -282,7 +294,26 @@ void *capture_packets(void *arg) {
 }
 
 void *start_tcp_scan(void *arg) {
+	uint8_t *send_ether_frame, *recv_ether_frame;
+	int sendsd, frame_length, bytes;
 	tcp_frame_struct *tcp_frame = (tcp_frame_struct *)arg;
+	struct sockaddr_ll device;
+
+	sendsd = tcp_frame->sendsd;
+	device = tcp_frame->device;
+
+	fprintf(stdout, "TCP PACKET: %s\n", tcp_frame->dst_ip);
+	submit_log("Executing TCP Scan [%s]", tcp_frame->dst_ip);
+	send_ether_frame = allocate_ustrmem (IP_MAXPACKET);
+
+	build_tcp_frame(send_ether_frame, tcp_frame->src_mac, tcp_frame->src_ip, tcp_frame->dst_ip, tcp_frame->data, tcp_frame->datalen);
+
+	frame_length = ETHER_HDRLEN + IP4_HDRLEN + TCP_HDRLEN + tcp_frame->datalen;
+
+	if ((bytes = sendto (sendsd, send_ether_frame, frame_length, 0, (struct sockaddr *) &device, sizeof (device))) <= 0) {
+        perror ("sendto() failed");
+        exit (EXIT_FAILURE);
+    }
 }
 
 // write IP:MAC to the file
@@ -308,6 +339,9 @@ int write_to_file(char *recv_ip, char *recv_mac) {
 
 	// device doesn't exist in the file
 	if(device_exists == 0) {
+		// print an output
+		fprintf (stdout, "IP = %s, MAC = %s\n", recv_ip, recv_mac);
+
 		// write to the file
 		fp_write = fopen(FILE_LOC, "a");
 		fprintf(fp_write, "%s:%s\n", recv_ip, recv_mac);
@@ -455,15 +489,82 @@ struct icmp build_icmp_hdr(uint8_t *data, int datalen) {
 }
 
 // TCP Header
-int build_tcp_frame(uint8_t *snd_ether_frame, uint8_t *src_mac, char *src_ip, char *dst_ip, uint8_t *data, int datalen) {
+int build_tcp_frame(uint8_t *send_ether_frame, uint8_t *src_mac, char *src_ip, char *dst_ip, uint8_t *data, int datalen) {
 	int i, status, *tcp_flags;
+	uint8_t *dst_mac;
 	struct ip iphdr;
 	struct tcphdr tcphdr;
 
+	/* From synhose.c by knight */
+	struct pseudo_header {
+		unsigned int source_address;
+		unsigned int dest_address;
+		unsigned char placeholder;
+		unsigned char protocol;
+		unsigned short tcp_length;
+		struct tcphdr tcp;
+	} pseudo_header;
+
 	// Allocate memory for various arrays.
+	dst_mac = allocate_ustrmem (ETHER_ADDR_LEN);
 	tcp_flags = allocate_intmem (8);
 
+	// Set destination MAC address: you need to fill these out
+	dst_mac[0] = 0xFF;
+	dst_mac[1] = 0xFF;
+	dst_mac[2] = 0xFF;
+	dst_mac[3] = 0xFF;
+	dst_mac[4] = 0xFF;
+	dst_mac[5] = 0xFF;
+
 	iphdr = build_ip_hdr(datalen, src_ip, dst_ip, TCP_PKT);
+
+	// TCP header
+
+	//TCP Header
+    tcphdr.source = htons (42591);
+    tcphdr.dest = htons (80);
+    tcphdr.seq = htonl(1105024978);
+    tcphdr.ack_seq = 0;
+    tcphdr.res1 = 0;
+    tcphdr.doff = sizeof(struct tcphdr) / 4;      //Size of tcp header
+    tcphdr.fin=0;
+    tcphdr.syn=1;
+    tcphdr.rst=0;
+    tcphdr.psh=0;
+    tcphdr.ack=0;
+    tcphdr.urg=0;
+    tcphdr.window = htons ( 14600 );  // maximum allowed window size
+    tcphdr.check = 0; //if you set a checksum to zero, your kernel's IP stack should fill in the correct checksum during transmission
+    tcphdr.urg_ptr = 0;
+
+	// TCP checksum (16 bits)
+	//tcphdr.check = tcp4_checksum (iphdr, tcphdr, data, datalen);
+
+	// Fill out ethernet frame header.
+
+	// Destination and Source MAC addresses
+	memcpy (send_ether_frame, dst_mac, 6 * sizeof (uint8_t));
+	memcpy (send_ether_frame + 6, src_mac, 6 * sizeof (uint8_t));
+
+	// Next is ethernet type code (ETH_P_IP for IPv4).
+	// http://www.iana.org/assignments/ethernet-numbers
+	send_ether_frame[12] = ETH_P_IP / 256;
+	send_ether_frame[13] = ETH_P_IP % 256;
+
+	// Next is ethernet frame data (IPv4 header + TCP header).
+
+	// IPv4 header
+	memcpy (send_ether_frame + ETHER_HDRLEN, &iphdr, IP4_HDRLEN * sizeof (uint8_t));
+
+	// TCP header
+	memcpy (send_ether_frame + ETHER_HDRLEN + IP4_HDRLEN, &tcphdr, TCP_HDRLEN * sizeof (uint8_t));
+
+	// TCP data
+	memcpy (send_ether_frame + ETHER_HDRLEN + IP4_HDRLEN + TCP_HDRLEN, data, datalen * sizeof (uint8_t));
+
+	// Free allocated memory.
+	free (tcp_flags);
 
 	return EXIT_SUCCESS;
 }
@@ -557,11 +658,11 @@ char* get_target_ip(char *src_ip) {
 	ip = strtok(src_ip, ".");
 	while(ip != NULL){
 		array[i] = ip;
-		fprintf(stderr, "%s.", array[i]);
+		//fprintf(stderr, "%s.", array[i]);
 		i++;
 		ip = strtok(NULL, ".");
 	}
-	fprintf(stderr, "\n");
+	//fprintf(stderr, "\n");
 
 	target_ip_adr = allocate_strmem(INET_ADDRSTRLEN);
 
