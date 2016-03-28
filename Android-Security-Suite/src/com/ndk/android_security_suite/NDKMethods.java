@@ -5,9 +5,23 @@ import java.util.ArrayList;
 public class NDKMethods extends RootAccess {
 
 	private final static String NDK_LOCATION = "/data/app/android-security-suite/";
-	
-	private static String interface_name;
 
+	// private static ArrayList<String> cmds = new ArrayList<String>();
+	//
+	// public static ArrayList<String> add_cmd(String cmd) {
+	// ArrayList<String> cmd_list = new ArrayList<String>();
+	// if(cmd != null)
+	// cmd_list.add(cmd);
+	// else
+	// return null;
+	//
+	// return cmd_list;
+	// }
+
+	/**
+	 * 
+	 * @param filter
+	 */
 	public static void start_capture(final String filter) {
 		Thread t1 = new Thread(new Runnable() {
 			@Override
@@ -24,6 +38,10 @@ public class NDKMethods extends RootAccess {
 		t1.start();
 	}
 
+	/**
+	 * 
+	 * @param app
+	 */
 	public static void stop_application(final String app) {
 		Thread t1 = new Thread(new Runnable() {
 			@Override
@@ -37,17 +55,42 @@ public class NDKMethods extends RootAccess {
 		});
 		t1.start();
 	}
-	
-	public static String get_lan_devices(final String ip_address) {
+
+	/**
+	 * 
+	 * @param interface_name
+	 */
+	public static void get_lan_devices(final String interface_name) {
 		Thread t1 = new Thread(new Runnable() {
 			@Override
 			public void run() {
-				//"netcfg | grep " + ip + " | awk '{print $1}';"
-				interface_name = runShellCommand("netcfg | grep " + ip_address + " | awk \'{print $1}\' > /storage/emulated/0/com.ndk.android-security-suite/test");
+				ArrayList<String> cmds = new ArrayList<String>();
+				if (interface_name != null)
+					cmds.add(NDK_LOCATION + "host-detect -i " + interface_name);
+
+				executeCommands(cmds);
+
 			}
 		});
-		
-		return interface_name;
+
+		t1.start();
+	}
+
+	/**
+	 * 
+	 * @param router
+	 * @param target
+	 */
+	public static void begin_arp_spoofing(String interface_name, String router, String target) {
+		Thread t1 = new Thread(new Runnable() {
+
+			@Override
+			public void run() {
+				ArrayList<String> cmd = new ArrayList<String>();
+			}
+
+		});
+		t1.start();
 	}
 
 	/*

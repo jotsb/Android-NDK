@@ -53,6 +53,7 @@
 #define DEBUG_TAG "\n[ANDROID_SECURITY_SUITE] ===> LIBPCAP_DEBUGGING ======> "
 #define TRUE 1
 #define FILE_LOC "/storage/emulated/0/com.ndk.android-security-suite/active-devices"
+#define LOG_FILE "/storage/emulated/0/com.ndk.android-security-suite/arpspoof.log"
 #define ICMP_PKT 0
 #define TCP_PKT 6
 
@@ -92,7 +93,9 @@ char BROADCAST_MAC_ADDR[MAC_ADDR_STRLEN] = "00:00:00:00:00:00";
 
 int TARGET_IP = 1;
 int SEQ_NUM = 1;
-int FINAL_TARGET_IP = 254;
+int FINAL_TARGET_IP = 255;
+
+FILE* fp_log;
 
 
 

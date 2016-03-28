@@ -22,6 +22,7 @@ int main(int argc, char **argv) {
 	tcp_frame_struct tcp_frame;
 
 	fp 						= fopen(FILE_LOC, "w");
+	fp_log					= fopen(LOG_FILE, "w");
 	
 
 	src_mac 				= allocate_ustrmem (ETHER_ADDR_LEN);
@@ -63,6 +64,8 @@ int main(int argc, char **argv) {
         }
 	}
 
+	fprintf(fp_log, "%s", "Executing Scan.....\n");
+
 	
 	memcpy(src_mac, get_mac_addr(sendsd, interface), ETHER_ADDR_LEN);
 
@@ -94,7 +97,7 @@ int main(int argc, char **argv) {
 	data[3] = 't';
 
 	src_ip = get_ip_addr(sendsd, interface);
-	submit_log("SRC IP [%s]", src_ip);
+	fprintf(fp_log, "SRC IP [%s]\n", src_ip);
 
 	// tcp_frame.datalen = datalen;
 	// tcp_frame.data = data;
@@ -113,7 +116,7 @@ int main(int argc, char **argv) {
 	for(;;) {
 		strcpy(temp, src_ip);
 		strcpy(target_ip, get_target_ip(temp)); // Destination IPv4 address
-		submit_log("TARGET IP [%s]", target_ip);
+		fprintf(fp_log, "TARGET IP [%s]\n", target_ip);
 
 		// Resolve target using getaddrinfo().
 		if ((status = getaddrinfo (target_ip, NULL, &hints, &res)) != 0) {
@@ -212,7 +215,12 @@ int main(int argc, char **argv) {
 	}
 
 	pthread_join(tcp_thread, NULL);
-	
+
+	fprintf(fp_log, "%s", "complete\n");
+
+	fclose(fp);
+	fclose(fp_log);
+
 	return 0;
 }
 
@@ -302,8 +310,7 @@ void *start_tcp_scan(void *arg) {
 	sendsd = tcp_frame->sendsd;
 	device = tcp_frame->device;
 
-	fprintf(stdout, "TCP PACKET: %s\n", tcp_frame->dst_ip);
-	submit_log("Executing TCP Scan [%s]", tcp_frame->dst_ip);
+	fprintf(fp_log, "TCP PACKET: %s\n", tcp_frame->dst_ip);
 	send_ether_frame = allocate_ustrmem (IP_MAXPACKET);
 
 	build_tcp_frame(send_ether_frame, tcp_frame->src_mac, tcp_frame->src_ip, tcp_frame->dst_ip, tcp_frame->data, tcp_frame->datalen);

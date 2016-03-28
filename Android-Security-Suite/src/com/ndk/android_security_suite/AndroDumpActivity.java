@@ -22,12 +22,12 @@ import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ListView;
+import android.widget.Toast;
 
 public class AndroDumpActivity extends Activity {
 
 	private String cap_loc;
 	private File cap_file;
-	private ListView lv;
 	private ArrayList<String> packets;
 	private ArrayList<String> lv_packets;
 	private ArrayAdapter<String> adapter;
@@ -36,9 +36,12 @@ public class AndroDumpActivity extends Activity {
 	private long lastKnownPosition = 0;
 	private boolean tail = true;
 	private RandomAccessFile readFile;
+	private Thread t1;
+	private Context context;
+	
+	private ListView lv;
 	private Button start_capture_btn;
 	private Button stop_capture_btn;
-	private Thread t1;
 	private EditText filter;
 
 	private final static String LOG_TAG = "[ANDROID_SECURITY_SUITE] ===> ";
@@ -47,6 +50,8 @@ public class AndroDumpActivity extends Activity {
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_andro_dump);
+		
+		context = this.getApplicationContext();
 
 		lv = (ListView) findViewById(R.id.packets);
 		start_capture_btn = (Button) findViewById(R.id.start_capture_btn);
@@ -62,9 +67,13 @@ public class AndroDumpActivity extends Activity {
 
 				String pkt = packets.get(position);
 
-				Intent intent = new Intent(AndroDumpActivity.this, PacketDetailsActivity.class);
-				intent.putExtra("pkt_details", pkt);
-				startActivity(intent);
+				if (pkt.equalsIgnoreCase("********* CAPTURE TERMINATED *********") == false) {
+					Intent intent = new Intent(AndroDumpActivity.this, PacketDetailsActivity.class);
+					intent.putExtra("pkt_details", pkt);
+					startActivity(intent);
+				} else {
+					Toast.makeText(context, "Not a packet", Toast.LENGTH_SHORT).show();
+				}
 
 			}
 		});
