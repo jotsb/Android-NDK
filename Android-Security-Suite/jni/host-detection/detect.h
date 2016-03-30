@@ -58,11 +58,12 @@
 #define TCP_PKT 6
 
 // Ethernet header 
+
 typedef struct sniff_ethernet {
-        u_char ether_dhost[ETHER_ADDR_LEN];     // Destination host address 
-        u_char ether_shost[ETHER_ADDR_LEN];     // Source host address 
-        u_short ether_type;                     // IP? ARP? RARP? etc 
-}eth_header;
+    u_char ether_dhost[ETHER_ADDR_LEN]; // Destination host address 
+    u_char ether_shost[ETHER_ADDR_LEN]; // Source host address 
+    u_short ether_type; // IP? ARP? RARP? etc 
+} eth_header;
 
 typedef struct tcp_frame {
     uint8_t *src_mac;
@@ -78,6 +79,7 @@ typedef struct tcp_frame {
 // Global Variables
 char *MY_IP_ADDRS;
 char *MY_MAC_ADDRS;
+
 
 char MY_IP_ADDR[INET_ADDR_STRLEN] = "192.168.0.12";
 char MY_MAC_ADDR[MAC_ADDR_STRLEN] = "8c:3a:e3:99:24:0b";
@@ -114,9 +116,9 @@ char* get_ip_addr(int socket, char *interface);
 char* get_target_ip(char *src_ip);
 
 
-uint16_t ipv4_checksum (uint16_t *addr, int len);
-uint16_t icmp4_checksum (struct icmp icmphdr, uint8_t *payload, int payloadlen);
-uint16_t tcp4_checksum (struct ip iphdr, struct tcphdr tcphdr, uint8_t *payload, int payloadlen);
+uint16_t ipv4_checksum(uint16_t *addr, int len);
+uint16_t icmp4_checksum(struct icmp icmphdr, uint8_t *payload, int payloadlen);
+uint16_t tcp4_checksum(struct ip iphdr, struct tcphdr tcphdr, uint8_t *payload, int payloadlen);
 
 int create_raw_socket(int socket_type);
 struct ip build_ip_hdr(int datalen, char *src_ip, char *dst_ip, int type);
@@ -129,6 +131,6 @@ void *start_tcp_scan(void *arg);
 int write_to_file(char *recv_ip, char *recv_mac);
 
 //P.D. Buchan (pdbuchan@yahoo.com)
-uint8_t *allocate_ustrmem (int len);
-char * allocate_strmem (int len);
-int* allocate_intmem (int len);
+uint8_t *allocate_ustrmem(int len);
+char * allocate_strmem(int len);
+int* allocate_intmem(int len);

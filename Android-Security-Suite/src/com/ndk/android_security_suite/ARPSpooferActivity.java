@@ -9,6 +9,9 @@ import java.net.NetworkInterface;
 import java.net.SocketException;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+
 import android.app.Activity;
 import android.content.Context;
 import android.net.wifi.WifiInfo;
@@ -110,7 +113,7 @@ public class ARPSpooferActivity extends Activity {
 			public void onClick(View v) {
 				String router = select_router.getSelectedItem().toString();
 				String target = select_target.getSelectedItem().toString();
-				
+
 				Toast.makeText(context, "Router:" + router + "\nTarget:" + target, Toast.LENGTH_LONG).show();
 			}
 		});
@@ -201,6 +204,7 @@ public class ARPSpooferActivity extends Activity {
 		TAIL = false;
 
 		load_devices();
+		// adapter.sort(Collections.reverseOrder());
 		scan_complete();
 	}
 

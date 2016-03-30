@@ -21,5 +21,7 @@
     <string name="select_the_router_device">Select the Router</string>
     <string name="select_target_device">Select the Target machine</string>
     <string name="spoof">Spoof</string>
+    <string name="ip_address_">"IP Address: "</string>
+    <string name="interface_">"Interface: "</string>
 
 </resources>

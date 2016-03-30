@@ -53,30 +53,36 @@
 #define CONFIG_FILE_LOC "/storage/emulated/0/com.ndk.android-security-suite/arp-exec"
 
 // Ethernet header 
+
 typedef struct sniff_ethernet {
-        u_char ether_dhost[ETHER_ADDR_LEN];     // Destination host address 
-        u_char ether_shost[ETHER_ADDR_LEN];     // Source host address 
-        u_short ether_type;                     // IP? ARP? RARP? etc 
-}eth_header;
+    u_char ether_dhost[ETHER_ADDR_LEN]; // Destination host address 
+    u_char ether_shost[ETHER_ADDR_LEN]; // Source host address 
+    u_short ether_type; // IP? ARP? RARP? etc 
+} eth_header;
 
 
 #define ARP_REQUEST 1   // ARP Request              
 #define ARP_REPLY 2     // ARP Reply                
-typedef struct arp_hdr { 
-    u_int16_t htype;    // Hardware Type            
-    u_int16_t ptype;    // Protocol Type            
-    u_char hlen;        // Hardware Address Length  
-    u_char plen;        // Protocol Address Length  
-    u_int16_t oper;     // Operation Code           
-    u_char sha[6];      // Sender hardware address  
-    u_char spa[4];      // Sender IP address        
-    u_char tha[6];      // Target hardware address  
-    u_char tpa[4];      // Target IP address       
-}arp_header; 
+
+typedef struct arp_hdr {
+    u_int16_t htype; // Hardware Type            
+    u_int16_t ptype; // Protocol Type            
+    u_char hlen; // Hardware Address Length  
+    u_char plen; // Protocol Address Length  
+    u_int16_t oper; // Operation Code           
+    u_char sha[6]; // Sender hardware address  
+    u_char spa[4]; // Sender IP address        
+    u_char tha[6]; // Target hardware address  
+    u_char tpa[4]; // Target IP address       
+} arp_header;
 
 // Global Variables
 char *MY_IP_ADDRS;
 char *MY_MAC_ADDRS;
+char *ROUTER_IP_ADDRS;
+char *ROUTER_MAC_ADDRS;
+char *VICTIM_IP_ADDRS;
+char *VICTIM_MAC_ADDRS;
 
 char MY_IP_ADDR[INET_ADDR_STRLEN] = "192.168.0.12";
 char MY_MAC_ADDR[MAC_ADDR_STRLEN] = "8c:3a:e3:99:24:0b";
@@ -104,5 +110,5 @@ int submit_log_i(char *msgType, int value);
 void print_mac_addr(uint8_t *mac);
 
 //P.D. Buchan (pdbuchan@yahoo.com)
-uint8_t *allocate_ustrmem (int len);
-char * allocate_strmem (int len);
+uint8_t *allocate_ustrmem(int len);
+char * allocate_strmem(int len);
