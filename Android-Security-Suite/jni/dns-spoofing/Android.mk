@@ -11,6 +11,6 @@ LOCAL_CFLAGS 			:= -DLIBPCAP_VERSION=0x097 -lpcap
 LOCAL_LDLIBS 			:= -ldl -llog
 
 LOCAL_C_INCLUDES 		:= $(LOCAL_PATH)/../libpcap
-LOCAL_STATIC_LIBRARIES 	:= libpcap
+LOCAL_STATIC_LIBRARIES		:= libpcap
 
 include $(BUILD_EXECUTABLE)
