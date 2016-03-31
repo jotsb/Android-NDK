@@ -16,7 +16,7 @@
         android:fontFamily="serif"
         android:gravity="center_horizontal"
         android:text="@string/android_security_suite"
-        android:textSize="24dp"
+        android:textSize="24sp"
         android:textStyle="bold" />
 
     <Button
@@ -61,21 +61,41 @@
 
     <TextView
         android:id="@+id/ip_address_main"
-        android:layout_width="match_parent"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_above="@+id/androdump"
-        android:layout_centerHorizontal="true"
-        android:layout_marginBottom="39dp"
+        android:layout_alignStart="@+id/androdump"
+        android:layout_marginBottom="27dp"
         android:text="@string/ip_address_"
         android:textAppearance="?android:attr/textAppearanceMedium" />
 
     <TextView
         android:id="@+id/Interface_name_main"
-        android:layout_width="match_parent"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_above="@+id/ip_address_main"
-        android:layout_marginBottom="39dp"
+        android:layout_alignStart="@+id/ip_address_main"
+        android:layout_marginBottom="25dp"
         android:text="@string/interface_"
+        android:textAppearance="?android:attr/textAppearanceMedium" />
+
+    <TextView
+        android:id="@+id/interface_name_main2"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignBaseline="@+id/Interface_name_main"
+        android:layout_alignBottom="@+id/Interface_name_main"
+        android:layout_alignRight="@+id/androdump"
+        android:text="Medium Text"
+        android:textAppearance="?android:attr/textAppearanceMedium" />
+
+    <TextView
+        android:id="@+id/ip_address_main2"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignRight="@+id/interface_name_main2"
+        android:layout_below="@+id/Interface_name_main"
+        android:text="Medium Text"
         android:textAppearance="?android:attr/textAppearanceMedium" />
 
 </RelativeLayout>

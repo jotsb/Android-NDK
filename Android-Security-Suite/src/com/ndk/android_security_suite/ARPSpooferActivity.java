@@ -35,7 +35,7 @@ public class ARPSpooferActivity extends Activity {
 	private ArrayList<String> devices;
 	private ArrayAdapter<String> adapter;
 	private NetworkInterface net_interface;
-	private String ip_address, interface_name;
+	private String ip_address, interface_name, config_file_loc;
 	private Thread t1;
 	private boolean TAIL = true;
 	private int runInterval = 500;
@@ -46,7 +46,7 @@ public class ARPSpooferActivity extends Activity {
 
 	// Accessing Views
 	private Context context;
-	private Button scan_btn, spoof_btn;
+	private Button scan_btn, spoof_btn, stop_spoof_btn;
 	private Spinner select_router, select_target;
 	private ProgressBar progress_bar;
 	private TextView textview1, textview2, net_interface_view, ip_address_view;
@@ -62,6 +62,7 @@ public class ARPSpooferActivity extends Activity {
 
 		scan_btn = (Button) findViewById(R.id.device_scan_btn);
 		spoof_btn = (Button) findViewById(R.id.start_spoof_btn);
+		stop_spoof_btn = (Button) findViewById(R.id.stop_spoof_btn);
 		select_router = (Spinner) findViewById(R.id.router_spinner);
 		select_target = (Spinner) findViewById(R.id.target_spinner);
 		progress_bar = (ProgressBar) findViewById(R.id.progressBar1);
@@ -69,6 +70,8 @@ public class ARPSpooferActivity extends Activity {
 		textview2 = (TextView) findViewById(R.id.textView2);
 		net_interface_view = (TextView) findViewById(R.id.net_interface);
 		ip_address_view = (TextView) findViewById(R.id.ip_address);
+		
+		config_file_loc = getSdCard() + "/com.ndk.android-security-suite/";
 
 		hide_views();
 
@@ -91,8 +94,8 @@ public class ARPSpooferActivity extends Activity {
 		}
 
 		if (net_interface != null) {
-			net_interface_view.setText(interface_name);
-			ip_address_view.setText(ip_address);
+			net_interface_view.setText("Network Interface: " + interface_name);
+			ip_address_view.setText("IP Address: " + ip_address);
 		}
 
 		scan_btn.setOnClickListener(new View.OnClickListener() {
@@ -101,7 +104,7 @@ public class ARPSpooferActivity extends Activity {
 				TAIL = true;
 				progress_bar.setVisibility(View.VISIBLE);
 				NDKMethods.get_lan_devices(interface_name);
-				log_file_loc = (getSdCard() + "/com.ndk.android-security-suite/arpspoof.log");
+				log_file_loc = (config_file_loc + "arpspoof.log");
 				log_file = new File(log_file_loc);
 				tailFile();
 			}
@@ -113,14 +116,25 @@ public class ARPSpooferActivity extends Activity {
 			public void onClick(View v) {
 				String router = select_router.getSelectedItem().toString();
 				String target = select_target.getSelectedItem().toString();
+				
+				NDKMethods.begin_arp_spoofing(config_file_loc, interface_name, router, target);
 
-				Toast.makeText(context, "Router:" + router + "\nTarget:" + target, Toast.LENGTH_LONG).show();
+				Toast.makeText(context, "Executing ARP Spoof \nRouter:" + router + "\nTarget:" + target, Toast.LENGTH_LONG).show();
+			}
+		});
+		
+		stop_spoof_btn.setOnClickListener(new View.OnClickListener() {
+			
+			@Override
+			public void onClick(View v) {
+				NDKMethods.stop_arp_spoofing(config_file_loc);
+				Toast.makeText(context, "Arp Spoofing Stopped", Toast.LENGTH_LONG).show();
 			}
 		});
 	}
 
 	public void load_devices() {
-		String file_path = (getSdCard() + "/com.ndk.android-security-suite/active-devices");
+		String file_path = (config_file_loc + "active-devices");
 		File device_list = new File(file_path);
 		RandomAccessFile read_file;
 		String line = null;
@@ -182,6 +196,7 @@ public class ARPSpooferActivity extends Activity {
 
 	public void hide_views() {
 		spoof_btn.setVisibility(View.GONE);
+		stop_spoof_btn.setVisibility(View.GONE);
 		select_router.setVisibility(View.GONE);
 		select_target.setVisibility(View.GONE);
 		progress_bar.setVisibility(View.GONE);
@@ -191,6 +206,7 @@ public class ARPSpooferActivity extends Activity {
 
 	public void scan_complete() {
 		spoof_btn.setVisibility(View.VISIBLE);
+		stop_spoof_btn.setVisibility(View.VISIBLE);
 		select_router.setVisibility(View.VISIBLE);
 		select_target.setVisibility(View.VISIBLE);
 		textview1.setVisibility(View.VISIBLE);

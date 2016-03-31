@@ -176,7 +176,7 @@ public abstract class RootAccess {
 		java.lang.Process suProcess;
 		
 		try {
-			suProcess = Runtime.getRuntime().exec("su\n");
+			suProcess = Runtime.getRuntime().exec("su");
 			DataOutputStream executeCmd = new DataOutputStream(suProcess.getOutputStream());
 			DataInputStream readOutput = new DataInputStream(suProcess.getInputStream());
 			if(executeCmd != null && readOutput != null) {

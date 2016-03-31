@@ -4,11 +4,19 @@ package com.ndk.android_security_suite;
 import com.ndk.android_security_suite.support.Support;
 
 import java.io.File;
+import java.net.InetAddress;
+import java.net.NetworkInterface;
+import java.net.SocketException;
+import java.net.UnknownHostException;
+
 import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
 import android.content.res.AssetManager;
-import android.os.AsyncTask;
+import android.net.wifi.WifiInfo;
+import android.net.wifi.WifiManager;
 import android.os.Bundle;
+import android.text.format.Formatter;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -20,6 +28,8 @@ public class MainActivity extends Activity {
 	private String SYSTEM_ARCHITECTURE;
 	private final String LOG_TAG = "[ANDROID_SECURITY_SUITE] ===> ";
 
+	private TextView ip_address_view, interface_view;
+
 	AssetManager assetManager;
 	File sdCard;
 
@@ -29,12 +39,34 @@ public class MainActivity extends Activity {
 		setContentView(R.layout.activity_main);
 
 		String exePath = null;
+		ip_address_view = (TextView) findViewById(R.id.ip_address_main2);
+		interface_view = (TextView) findViewById(R.id.interface_name_main2);
 
 		this.SYSTEM_ARCHITECTURE = Support.getCPUArch();
 		Toast.makeText(getApplicationContext(), this.SYSTEM_ARCHITECTURE, Toast.LENGTH_SHORT).show();
 
 		this.assetManager = getAssets();
 		this.sdCard = getExternalFilesDir(null);
+
+		WifiManager wm = (WifiManager) getSystemService(WIFI_SERVICE);
+		WifiInfo wifiInfo = wm.getConnectionInfo();
+		int ip = wifiInfo.getIpAddress();
+		String ip_address = Formatter.formatIpAddress(ip);
+
+		ip_address_view.setText(ip_address);
+
+		try {
+			NetworkInterface net_interface = getActiveWifiInterface(getApplicationContext(), ip_address);
+			String interface_name = net_interface.getName();
+
+			if (interface_name != null) {
+				interface_view.setText(interface_name);
+			}
+		} catch (SocketException e) {
+			e.printStackTrace();
+		} catch (UnknownHostException e) {
+			e.printStackTrace();
+		}
 
 		/*
 		 * try { String[] asset = assetManager.list(this.SYSTEM_ARCHITECTURE);
@@ -76,6 +108,19 @@ public class MainActivity extends Activity {
 			return true;
 		}
 		return super.onOptionsItemSelected(item);
+	}
+
+	public static NetworkInterface getActiveWifiInterface(Context context, String ip_address)
+			throws SocketException, UnknownHostException {
+		WifiManager wifiManager = (WifiManager) context.getSystemService(Context.WIFI_SERVICE);
+		// Return dynamic information about the current Wi-Fi connection, if any
+		// is active.
+		WifiInfo wifiInfo = wifiManager.getConnectionInfo();
+		if (wifiInfo == null)
+			return null;
+		// InetAddress address = intToInet(wifiInfo.getIpAddress());
+		InetAddress address = InetAddress.getByName(ip_address);
+		return NetworkInterface.getByInetAddress(address);
 	}
 
 	public void startAndroDumpActivity(View view) {

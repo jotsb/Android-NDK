@@ -22,6 +22,8 @@
     <string name="select_target_device">Select the Target machine</string>
     <string name="spoof">Spoof</string>
     <string name="ip_address_">"IP Address: "</string>
-    <string name="interface_">"Interface: "</string>
+    <string name="interface_">"Network Interface: "</string>
+    <string name="medium_text">Medium Text</string>
+    <string name="stop_spoofing">Stop Spoofing</string>
 
 </resources>

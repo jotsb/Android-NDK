@@ -5,6 +5,8 @@ import java.util.ArrayList;
 public class NDKMethods extends RootAccess {
 
 	private final static String NDK_LOCATION = "/data/app/android-security-suite/";
+	
+	private static boolean retVal;
 
 	// private static ArrayList<String> cmds = new ArrayList<String>();
 	//
@@ -81,16 +83,36 @@ public class NDKMethods extends RootAccess {
 	 * @param router
 	 * @param target
 	 */
-	public static void begin_arp_spoofing(String interface_name, String router, String target) {
+	public static void begin_arp_spoofing(final String location, final String interface_name, final String router, final String target) {
 		Thread t1 = new Thread(new Runnable() {
 
 			@Override
 			public void run() {
 				ArrayList<String> cmd = new ArrayList<String>();
+				cmd.add("echo 0 > " + location + "arp-exec");
+				cmd.add(NDK_LOCATION + "arp-spoof -i " + interface_name + " -r " + router + " -t " + target);
+				
+				executeCommands(cmd);
 			}
 
 		});
 		t1.start();
+	}
+	
+	public static void stop_arp_spoofing(final String location) {
+		Thread t1 = new Thread(new Runnable() {
+
+			@Override
+			public void run() {
+				ArrayList<String> cmd = new ArrayList<String>();
+				cmd.add("echo 1 > " + location + "arp-exec");
+				
+				executeCommands(cmd);
+			}
+			
+		});
+		
+		t1.start();		
 	}
 
 	/*
