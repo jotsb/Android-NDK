@@ -25,5 +25,6 @@
     <string name="interface_">"Network Interface: "</string>
     <string name="medium_text">Medium Text</string>
     <string name="stop_spoofing">Stop Spoofing</string>
+    <string name="textview">TextView</string>
 
 </resources>
