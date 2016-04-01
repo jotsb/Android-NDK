@@ -120,7 +120,6 @@ struct sniff_tcp {
 };
 
 // UDP Header 
-
 struct udp_hdr {
     u_short uh_sport; // source port 
     u_short uh_dport; // destination port
