@@ -60,6 +60,7 @@ extern "C" {
 
 #define INET_ADDR_STRLEN 16
 #define MAC_ADDR_STRLEN 18
+#define REQUEST_SIZE 100
 
 #define DEBUG_TAG "\n[ANDROID_SECURITY_SUITE] ===> LIBPCAP_DEBUGGING ======> "
 
@@ -100,45 +101,45 @@ extern "C" {
     };
 
     //DNS header
-//
-//    struct DNS_HEADER {
-//        unsigned short id;
-//        unsigned char rd : 1;
-//        unsigned char tc : 1;
-//        unsigned char aa : 1;
-//        unsigned char opcode : 4;
-//        unsigned char qr : 1;
-//
-//        unsigned char rcode : 4;
-//        unsigned char cd : 1;
-//        unsigned char ad : 1;
-//        unsigned char z : 1;
-//        unsigned char ra : 1;
-//
-//        unsigned short q_count;
-//        unsigned short ans_count;
-//        unsigned short auth_count;
-//        unsigned short add_count;
-//    };
-//
-//#pragma pack(push, 1)
-//
-//    struct R_DATA {
-//        unsigned short type;
-//        unsigned short _class;
-//        unsigned int ttl;
-//        unsigned short data_len;
-//    };
-//#pragma pack(pop)s
-//
-//    struct RES_RECORD {
-//        unsigned char *name;
-//        struct R_DATA *resource;
-//        unsigned char *rdata;
-//    };
+
+    struct DNS_HEADER {
+        unsigned short id;
+        unsigned char rd : 1;
+        unsigned char tc : 1;
+        unsigned char aa : 1;
+        unsigned char opcode : 4;
+        unsigned char qr : 1;
+
+        unsigned char rcode : 4;
+        unsigned char cd : 1;
+        unsigned char ad : 1;
+        unsigned char z : 1;
+        unsigned char ra : 1;
+
+        unsigned short q_count;
+        unsigned short ans_count;
+        unsigned short auth_count;
+        unsigned short add_count;
+    };
+
+#pragma pack(push, 1)
+
+    struct R_DATA {
+        unsigned short type;
+        unsigned short _class;
+        unsigned int ttl;
+        unsigned short data_len;
+    };
+#pragma pack(pop)
+
+    struct RES_RECORD {
+        unsigned char *name;
+        struct R_DATA *resource;
+        unsigned char *rdata;
+    };
 
     /* DNS header definition */
-    struct dnshdr {
+    struct dns_hdr {
         char id[2];
         char flags[2];
         char qdcount[2];
@@ -148,22 +149,11 @@ extern "C" {
     };
 
     /* DNS query structure */
-    struct dnsquery {
+    struct dns_query {
         char *qname;
         char qtype[2];
         char qclass[2];
     };
-
-    /* DNS answer structure */
-    struct dnsanswer {
-        char *name;
-        char atype[2];
-        char aclass[2];
-        char ttl[4];
-        char RdataLen[2];
-        char *Rdata;
-    };
-
 
 
     int submit_log(char *msgType, char *string);
@@ -183,7 +173,9 @@ extern "C" {
     u_char* handle_IP(u_char *args, const struct pcap_pkthdr* pkthdr, const u_char* packet);
     u_char* handle_UDP(u_char *args, const struct pcap_pkthdr* pkthdr, const u_char* packet);
     void handle_DNS(u_char *args, const struct pcap_pkthdr* pkthdr, const char* packet);
-    void extract_dns_request(struct dnsquery *dns_query, char *request);
+    char* extract_dns_request(struct dns_query *dnsquery);
+    
+    char * allocate_strmem(int len);
 
 
 #ifdef __cplusplus
