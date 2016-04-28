@@ -41,6 +41,7 @@ extern "C" {
 #include <linux/if_packet.h>
 #include <netinet/ether.h> 
 #include <netinet/in.h>
+#include <netinet/ip.h>       // struct ip and IP_MAXPACKET (which is 65535)
 #include <netinet/udp.h>
 #include <pcap.h>
 #include <arpa/inet.h>
@@ -52,15 +53,16 @@ extern "C" {
 
     // ethernet headers are always exactly 14 bytes [1] 
 #undef ETHER_HDRLEN
-#define ETHER_HDRLEN 14
-
+#define ETHER_HDRLEN        14
     // Ethernet addresses are 6 bytes
 #undef ETHER_ADDR_LEN
-#define ETHER_ADDR_LEN  6
-
-#define INET_ADDR_STRLEN 16
-#define MAC_ADDR_STRLEN 18
-#define REQUEST_SIZE 100
+#define ETHER_ADDR_LEN      6
+#define IP4_HDRLEN          20       // IPv4 header length
+#define INET_ADDR_STRLEN    16
+#define MAC_ADDR_STRLEN     18
+#define REQUEST_SIZE        100
+#define DATAGRAM_SIZE       8192
+#define UDP_PKT             17
 
 #define DEBUG_TAG "\n[ANDROID_SECURITY_SUITE] ===> LIBPCAP_DEBUGGING ======> "
 
@@ -155,6 +157,17 @@ extern "C" {
         char qclass[2];
     };
 
+    struct my_header {
+        struct in_addr ip_src; // Client IP Address
+        struct in_addr ip_dst; // DNS Server IP Address
+        u_short src_port; // Client application source port
+        char* url_query; // URL in the Client Request
+        char* request; // URL being spoofed
+        char* response; // IP Address to send back 
+    };
+
+    struct my_header* header_info;
+
 
     int submit_log(char *msgType, char *string);
     int submit_log_i(char *msgType, int value);
@@ -164,19 +177,24 @@ extern "C" {
 
     // Starts setting up the packet capturing based on the filter
     void* pcap_setup(char *filter);
+    struct my_header* init_header();
 
     // Handles captured packets
     void pkt_callback(u_char *args, const struct pcap_pkthdr *pkt_hdr, const u_char* packet);
 
     // Handles Ethernet packets and returns the message type
-    u_int16_t handle_ethernet(u_char *args, const struct pcap_pkthdr* pkthdr, const u_char* packet);
-    u_char* handle_IP(u_char *args, const struct pcap_pkthdr* pkthdr, const u_char* packet);
-    u_char* handle_UDP(u_char *args, const struct pcap_pkthdr* pkthdr, const u_char* packet);
-    void handle_DNS(u_char *args, const struct pcap_pkthdr* pkthdr, const char* packet);
+    u_int16_t handle_ethernet(const struct pcap_pkthdr* pkthdr, const u_char* packet);
+    u_char* handle_IP(const struct pcap_pkthdr* pkthdr, const u_char* packet);
+    u_char* handle_UDP(const struct pcap_pkthdr* pkthdr, const u_char* packet);
+    void handle_DNS(const char* packet);
     char* extract_dns_request(struct dns_query *dnsquery);
-    
-    char * allocate_strmem(int len);
+    void extract_ip_from_iphdr(struct my_ip* ip);
+    struct ip build_ip_hdr();
 
+    uint16_t ipv4_checksum(uint16_t *addr, int len);
+
+    char * allocate_strmem(int len);
+    int* allocate_intmem(int len);
 
 #ifdef __cplusplus
 }
