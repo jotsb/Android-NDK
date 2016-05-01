@@ -102,6 +102,12 @@ extern "C" {
         u_short uh_sum; // datagram checksum
     };
 
+    struct dns_response {
+        struct DNS_HEADER *_hdr;
+        struct dns_query *_query;
+        struct RES_RECORD *_response;
+    };
+
     //DNS header
 
     struct DNS_HEADER {
@@ -166,23 +172,15 @@ extern "C" {
         char* response; // IP Address to send back 
     };
 
-    struct my_header* header_info;
+    struct my_header* header_info; // captured header info
 
 
     int submit_log(char *msgType, char *string);
     int submit_log_i(char *msgType, int value);
-
-    // find the first NIC that is up and sniff packets from it
     char* get_device();
-
-    // Starts setting up the packet capturing based on the filter
     void* pcap_setup(char *filter);
     struct my_header* init_header();
-
-    // Handles captured packets
     void pkt_callback(u_char *args, const struct pcap_pkthdr *pkt_hdr, const u_char* packet);
-
-    // Handles Ethernet packets and returns the message type
     u_int16_t handle_ethernet(const struct pcap_pkthdr* pkthdr, const u_char* packet);
     u_char* handle_IP(const struct pcap_pkthdr* pkthdr, const u_char* packet);
     u_char* handle_UDP(const struct pcap_pkthdr* pkthdr, const u_char* packet);
@@ -190,9 +188,10 @@ extern "C" {
     char* extract_dns_request(struct dns_query *dnsquery);
     void extract_ip_from_iphdr(struct my_ip* ip);
     struct ip build_ip_hdr();
-
+    struct udp_hdr build_udp_hdr();
+    struct dns_response build_dns_answer(struct dns_query *query);
+    void build_response_packet(struct dns_query *query);
     uint16_t ipv4_checksum(uint16_t *addr, int len);
-
     char * allocate_strmem(int len);
     int* allocate_intmem(int len);
 
