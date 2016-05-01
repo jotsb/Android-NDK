@@ -121,7 +121,7 @@ u_char* handle_IP(const struct pcap_pkthdr* pkthdr, const u_char* packet) {
     u_int hlen, off, version;
     int len;
 
-    fprintf(stderr, "%s", "    |> handle_ip()\n");
+    //fprintf(stderr, "%s", "    |> handle_ip()\n");
 
     // Jump to IP packet packet + ETHER_HDRLEN
     ip = (struct my_ip *) (packet + ETHER_HDRLEN);
@@ -177,7 +177,7 @@ u_char* handle_UDP(const struct pcap_pkthdr* pkthdr, const u_char* packet) {
     char *dns_pkt;
     u_int caplen = pkthdr->caplen;
 
-    fprintf(stderr, "%s", "        |> handle_udp()\n");
+    //fprintf(stderr, "%s", "        |> handle_udp()\n");
 
     ethernet = (struct sniff_ethernet *) packet;
 
@@ -209,7 +209,7 @@ void handle_DNS(const char* packet) {
 
     url = allocate_strmem(REQUEST_SIZE);
 
-    fprintf(stderr, "%s", "            |> handle_dns()\n");
+    //fprintf(stderr, "%s", "            |> handle_dns()\n");
 
     ethernet = (struct sniff_ethernet *) packet;
 
@@ -250,8 +250,7 @@ char* extract_dns_request(struct dns_query *dnsquery) {
     char *curr = dnsquery->qname;
     unsigned int size;
     char *request;
-
-    fprintf(stderr, "%s", "                |> extract_dns_request()\n");
+    
     request = allocate_strmem(REQUEST_SIZE);
 
     size = curr[0];
@@ -270,7 +269,8 @@ char* extract_dns_request(struct dns_query *dnsquery) {
     }
     request[--j] = '\0';
 
-    fprintf(stderr, "%s URL: %s\n", "                    |> ", request);
+    submit_log("extract_dns_request() URL : %s\n", request);
+    fprintf(stderr, "URL: %s\n", request);
 
     return request;
 }
