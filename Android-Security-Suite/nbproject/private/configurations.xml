@@ -1,0 +1,507 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configurationDescriptor version="97">
+  <logicalFolder name="root" displayName="root" projectFiles="true" kind="ROOT">
+    <df root="." name="0">
+      <df name=".settings">
+      </df>
+      <df name="assets">
+        <df name="arm64-v8a">
+        </df>
+        <df name="armeabi">
+        </df>
+        <df name="armeabi-v7a">
+        </df>
+        <df name="mips">
+        </df>
+        <df name="mips64">
+        </df>
+        <df name="x86">
+        </df>
+        <df name="x86_64">
+        </df>
+      </df>
+      <df name="bin">
+        <df name="classes">
+          <df name="com">
+            <df name="ndk">
+              <df name="android_security_suite">
+                <df name="support">
+                </df>
+              </df>
+            </df>
+          </df>
+        </df>
+        <df name="dexedLibs">
+        </df>
+        <df name="res">
+          <df name="drawable-hdpi">
+          </df>
+          <df name="drawable-mdpi">
+          </df>
+          <df name="drawable-xhdpi">
+          </df>
+          <df name="drawable-xxhdpi">
+          </df>
+        </df>
+        <df name="rsLibs">
+        </df>
+        <df name="rsObj">
+        </df>
+      </df>
+      <df name="gen">
+        <df name="com">
+          <df name="ndk">
+            <df name="android_security_suite">
+            </df>
+          </df>
+        </df>
+      </df>
+      <df name="jni">
+        <df name="androdump">
+          <in>AndroDump.c</in>
+          <in>AndroDump.h</in>
+        </df>
+        <df name="arpspoof">
+          <in>arp_spoofer.c</in>
+          <in>arp_spoofer.h</in>
+        </df>
+        <df name="Backup-Code">
+          <in>com_example_android_ndk_example_NDKMethods.c</in>
+          <in>com_example_android_ndk_example_NDKMethods.h</in>
+          <in>ndkmethod</in>
+        </df>
+        <df name="dns-spoofing">
+          <in>Android.mk</in>
+          <in>dns-spoof.c</in>
+          <in>dns-spoof.h</in>
+        </df>
+        <df name="host-detection">
+          <in>detect.h</in>
+          <in>main.c</in>
+        </df>
+        <df name="libpcap">
+          <df name="bpf">
+            <df name="net">
+              <in>bpf_filter.c</in>
+            </df>
+          </df>
+          <df name="ChmodBPF">
+          </df>
+          <df name="doc">
+          </df>
+          <df name="lbl">
+            <in>os-aix4.h</in>
+            <in>os-hpux11.h</in>
+            <in>os-osf4.h</in>
+            <in>os-osf5.h</in>
+            <in>os-solaris2.h</in>
+            <in>os-sunos4.h</in>
+            <in>os-ultrix4.h</in>
+          </df>
+          <df name="missing">
+            <in>snprintf.c</in>
+          </df>
+          <df name="msdos">
+            <in>bin2c.c</in>
+            <in>ndis2.c</in>
+            <in>ndis2.h</in>
+            <in>ndis_0.asm</in>
+            <in>pkt_rx0.asm</in>
+            <in>pkt_rx1.s</in>
+            <in>pktdrvr.c</in>
+            <in>pktdrvr.h</in>
+          </df>
+          <df name="packaging">
+          </df>
+          <df name="pcap">
+            <in>bluetooth.h</in>
+            <in>bpf.h</in>
+            <in>ipnet.h</in>
+            <in>namedb.h</in>
+            <in>nflog.h</in>
+            <in>pcap.h</in>
+            <in>sll.h</in>
+            <in>usb.h</in>
+            <in>vlan.h</in>
+          </df>
+          <df name="SUNOS4">
+          </df>
+          <df name="tests">
+            <in>filtertest.c</in>
+            <in>findalldevstest.c</in>
+            <in>nonblocktest.c</in>
+            <in>opentest.c</in>
+            <in>pcap_compile_test.c</in>
+            <in>reactivatetest.c</in>
+            <in>selpolltest.c</in>
+            <in>valgrindtest.c</in>
+          </df>
+          <df name="Win32">
+            <df name="Include">
+              <df name="arpa">
+                <in>nameser.h</in>
+              </df>
+              <df name="net">
+                <in>if.h</in>
+                <in>netdb.h</in>
+                <in>paths.h</in>
+              </df>
+              <in>Gnuc.h</in>
+              <in>addrinfo.h</in>
+              <in>bittypes.h</in>
+              <in>cdecl_ext.h</in>
+              <in>inetprivate.h</in>
+              <in>ip6_misc.h</in>
+              <in>sockstorage.h</in>
+            </df>
+            <df name="Prj">
+            </df>
+            <df name="Src">
+              <in>ffs.c</in>
+              <in>gai_strerror.c</in>
+              <in>getaddrinfo.c</in>
+              <in>getnetbynm.c</in>
+              <in>getnetent.c</in>
+              <in>getopt.c</in>
+              <in>getservent.c</in>
+              <in>inet_aton.c</in>
+              <in>inet_net.c</in>
+              <in>inet_pton.c</in>
+            </df>
+          </df>
+          <in>arcnet.h</in>
+          <in>atmuni31.h</in>
+          <in>bpf_dump.c</in>
+          <in>bpf_filter.c</in>
+          <in>bpf_image.c</in>
+          <in>config.h</in>
+          <in>dlpisubs.c</in>
+          <in>dlpisubs.h</in>
+          <in>etherent.c</in>
+          <in>ethertype.h</in>
+          <in>fad-getad.c</in>
+          <in>fad-gifc.c</in>
+          <in>fad-glifc.c</in>
+          <in>fad-null.c</in>
+          <in>fad-sita.c</in>
+          <in>fad-win32.c</in>
+          <in>gencode.c</in>
+          <in>gencode.h</in>
+          <in>grammar.c</in>
+          <in>ieee80211.h</in>
+          <in>inet.c</in>
+          <in>llc.h</in>
+          <in>nametoaddr.c</in>
+          <in>nlpid.h</in>
+          <in>optimize.c</in>
+          <in>pcap-bpf.c</in>
+          <in>pcap-bpf.h</in>
+          <in>pcap-bt-linux.c</in>
+          <in>pcap-bt-linux.h</in>
+          <in>pcap-can-linux.c</in>
+          <in>pcap-can-linux.h</in>
+          <in>pcap-canusb-linux.c</in>
+          <in>pcap-canusb-linux.h</in>
+          <in>pcap-common.c</in>
+          <in>pcap-common.h</in>
+          <in>pcap-dag.c</in>
+          <in>pcap-dag.h</in>
+          <in>pcap-dbus.c</in>
+          <in>pcap-dbus.h</in>
+          <in>pcap-dlpi.c</in>
+          <in>pcap-dos.c</in>
+          <in>pcap-dos.h</in>
+          <in>pcap-enet.c</in>
+          <in>pcap-int.h</in>
+          <in>pcap-libdlpi.c</in>
+          <in>pcap-linux.c</in>
+          <in>pcap-namedb.h</in>
+          <in>pcap-netfilter-linux-android.c</in>
+          <in>pcap-netfilter-linux-android.h</in>
+          <in>pcap-netfilter-linux.c</in>
+          <in>pcap-netfilter-linux.h</in>
+          <in>pcap-nit.c</in>
+          <in>pcap-null.c</in>
+          <in>pcap-pf.c</in>
+          <in>pcap-septel.c</in>
+          <in>pcap-septel.h</in>
+          <in>pcap-sita.c</in>
+          <in>pcap-sita.h</in>
+          <in>pcap-snf.c</in>
+          <in>pcap-snf.h</in>
+          <in>pcap-snit.c</in>
+          <in>pcap-snoop.c</in>
+          <in>pcap-stdinc.h</in>
+          <in>pcap-usb-linux.c</in>
+          <in>pcap-usb-linux.h</in>
+          <in>pcap-win32.c</in>
+          <in>pcap.c</in>
+          <in>pcap.h</in>
+          <in>pcap1.h</in>
+          <in>ppp.h</in>
+          <in>savefile.c</in>
+          <in>scanner.c</in>
+          <in>scanner.h</in>
+          <in>sf-pcap-ng.c</in>
+          <in>sf-pcap-ng.h</in>
+          <in>sf-pcap.c</in>
+          <in>sf-pcap.h</in>
+          <in>sunatmpos.h</in>
+          <in>tokdefs.h</in>
+          <in>version.c</in>
+          <in>version.h</in>
+        </df>
+        <df name="support">
+          <in>support.c</in>
+          <in>support.h</in>
+        </df>
+      </df>
+      <df name="libs">
+        <df name="arm64-v8a">
+        </df>
+        <df name="armeabi">
+        </df>
+        <df name="armeabi-v7a">
+        </df>
+        <df name="mips">
+        </df>
+        <df name="mips64">
+        </df>
+        <df name="x86">
+        </df>
+        <df name="x86_64">
+        </df>
+      </df>
+      <df name="obj">
+        <df name="local">
+          <df name="arm64-v8a">
+            <df name="objs">
+              <df name="AndroDump">
+              </df>
+              <df name="pcap">
+              </df>
+            </df>
+            <df name="objs-debug">
+              <df name="AndroDump">
+              </df>
+              <df name="arp-spoof">
+              </df>
+              <df name="dns-spoof">
+              </df>
+              <df name="host-detect">
+              </df>
+              <df name="pcap">
+              </df>
+            </df>
+          </df>
+          <df name="armeabi">
+            <df name="objs">
+              <df name="AndroDump">
+              </df>
+              <df name="pcap">
+              </df>
+            </df>
+            <df name="objs-debug">
+              <df name="AndroDump">
+              </df>
+              <df name="arp-spoof">
+              </df>
+              <df name="dns-spoof">
+              </df>
+              <df name="host-detect">
+              </df>
+              <df name="pcap">
+              </df>
+            </df>
+          </df>
+          <df name="armeabi-v7a">
+            <df name="objs">
+              <df name="AndroDump">
+              </df>
+              <df name="pcap">
+              </df>
+            </df>
+            <df name="objs-debug">
+              <df name="AndroDump">
+              </df>
+              <df name="arp-spoof">
+              </df>
+              <df name="dns-spoof">
+              </df>
+              <df name="host-detect">
+              </df>
+              <df name="pcap">
+              </df>
+            </df>
+          </df>
+          <df name="mips">
+            <df name="objs">
+              <df name="AndroDump">
+              </df>
+              <df name="pcap">
+              </df>
+            </df>
+            <df name="objs-debug">
+              <df name="AndroDump">
+              </df>
+              <df name="arp-spoof">
+              </df>
+              <df name="dns-spoof">
+              </df>
+              <df name="host-detect">
+              </df>
+              <df name="pcap">
+              </df>
+            </df>
+          </df>
+          <df name="mips64">
+            <df name="objs">
+              <df name="AndroDump">
+              </df>
+              <df name="pcap">
+              </df>
+            </df>
+            <df name="objs-debug">
+              <df name="AndroDump">
+              </df>
+              <df name="arp-spoof">
+              </df>
+              <df name="dns-spoof">
+              </df>
+              <df name="host-detect">
+              </df>
+              <df name="pcap">
+              </df>
+            </df>
+          </df>
+          <df name="x86">
+            <df name="objs">
+              <df name="AndroDump">
+              </df>
+              <df name="pcap">
+              </df>
+            </df>
+            <df name="objs-debug">
+              <df name="AndroDump">
+              </df>
+              <df name="arp-spoof">
+              </df>
+              <df name="dns-spoof">
+              </df>
+              <df name="host-detect">
+              </df>
+              <df name="pcap">
+              </df>
+            </df>
+          </df>
+          <df name="x86_64">
+            <df name="objs">
+              <df name="AndroDump">
+              </df>
+              <df name="pcap">
+              </df>
+            </df>
+            <df name="objs-debug">
+              <df name="AndroDump">
+              </df>
+              <df name="arp-spoof">
+              </df>
+              <df name="dns-spoof">
+              </df>
+              <df name="host-detect">
+              </df>
+              <df name="pcap">
+              </df>
+            </df>
+          </df>
+        </df>
+      </df>
+      <df name="res">
+        <df name="drawable-hdpi">
+        </df>
+        <df name="drawable-ldpi">
+        </df>
+        <df name="drawable-mdpi">
+        </df>
+        <df name="drawable-xhdpi">
+        </df>
+        <df name="drawable-xxhdpi">
+        </df>
+        <df name="layout">
+        </df>
+        <df name="menu">
+        </df>
+        <df name="raw">
+          <df name="ndk">
+          </df>
+        </df>
+        <df name="values">
+        </df>
+        <df name="values-v11">
+        </df>
+        <df name="values-v14">
+        </df>
+        <df name="values-w820dp">
+        </df>
+      </df>
+      <df name="src">
+        <df name="com">
+          <df name="ndk">
+            <df name="android_security_suite">
+              <df name="support">
+              </df>
+            </df>
+          </df>
+        </df>
+      </df>
+    </df>
+  </logicalFolder>
+  <projectmakefile></projectmakefile>
+  <confs>
+    <conf name="Default" type="0">
+      <toolsSet>
+        <developmentServer>localhost</developmentServer>
+        <platform>2</platform>
+      </toolsSet>
+      <compile>
+        <compiledirpicklist>
+          <compiledirpicklistitem>.</compiledirpicklistitem>
+          <compiledirpicklistitem>${AUTO_FOLDER}</compiledirpicklistitem>
+        </compiledirpicklist>
+        <compiledir>${AUTO_FOLDER}</compiledir>
+        <compilecommandpicklist>
+          <compilecommandpicklistitem>${MAKE} ${ITEM_NAME}.o</compilecommandpicklistitem>
+          <compilecommandpicklistitem>${AUTO_COMPILE}</compilecommandpicklistitem>
+        </compilecommandpicklist>
+        <compilecommand>${AUTO_COMPILE}</compilecommand>
+      </compile>
+      <dbx_gdbdebugger version="1">
+        <gdb_pathmaps>
+        </gdb_pathmaps>
+        <gdb_interceptlist>
+          <gdbinterceptoptions gdb_all="false" gdb_unhandled="true" gdb_unexpected="true"/>
+        </gdb_interceptlist>
+        <gdb_options>
+          <DebugOptions>
+          </DebugOptions>
+        </gdb_options>
+        <gdb_buildfirst gdb_buildfirst_overriden="false" gdb_buildfirst_old="false"/>
+      </dbx_gdbdebugger>
+      <nativedebugger version="1">
+        <engine>gdb</engine>
+      </nativedebugger>
+      <runprofile version="9">
+        <runcommandpicklist>
+          <runcommandpicklistitem>"${OUTPUT_PATH}"</runcommandpicklistitem>
+        </runcommandpicklist>
+        <runcommand>"${OUTPUT_PATH}"</runcommand>
+        <rundir>.</rundir>
+        <buildfirst>false</buildfirst>
+        <terminal-type>0</terminal-type>
+        <remove-instrumentation>0</remove-instrumentation>
+        <environment>
+        </environment>
+      </runprofile>
+    </conf>
+  </confs>
+</configurationDescriptor>

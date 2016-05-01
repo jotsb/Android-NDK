@@ -287,7 +287,8 @@ struct ip build_ip_hdr() {
     send_iphdr.ip_hl = IP4_HDRLEN / sizeof (uint32_t); // IPv4 header length (4 bits): Number of 32-bit words in header = 5
     send_iphdr.ip_v = 4; // Internet Protocol version (4 bits): IPv4
     send_iphdr.ip_tos = 0; // Type of service (8 bits)
-    send_iphdr.ip_len = htons(IP4_HDRLEN + sizeof (struct udp_hdr) + sizeof (struct DNS_HEADER) + sizeof (struct RES_RECORD)); // Total length of datagram (16 bits): IP header + ICMP header + ICMP data
+//    send_iphdr.ip_len = htons(IP4_HDRLEN + sizeof (struct udp_hdr) + sizeof (struct DNS_HEADER) + sizeof (struct RES_RECORD)); // Total length of datagram (16 bits): IP header + ICMP header + ICMP data
+    send_iphdr.ip_len = htons(IP4_HDRLEN + sizeof (struct udp_hdr) + sizeof (struct dns_response)); // Total length of datagram (16 bits): IP header + UDP header + UDP data (DNS HDR + QUERY + ANSWER)
     send_iphdr.ip_id = htons(id); // ID sequence number (16 bits): unused, since single datagram
     ip_flags[0] = 0; // Zero (1 bit)
     ip_flags[1] = 1; // Do not fragment flag (1 bit)

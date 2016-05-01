@@ -1,0 +1,407 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configurationDescriptor version="97">
+  <logicalFolder name="root" displayName="root" projectFiles="true" kind="ROOT">
+    <df root="." name="0">
+      <df name="jni">
+        <df name="dns-spoofing">
+          <in>Android.mk</in>
+          <in>dns-spoof.c</in>
+          <in>dns-spoof.h</in>
+        </df>
+        <df name="libpcap">
+          <in>bpf_dump.c</in>
+          <in>bpf_filter.c</in>
+          <in>bpf_image.c</in>
+          <in>etherent.c</in>
+          <in>fad-gifc.c</in>
+          <in>gencode.c</in>
+          <in>grammar.c</in>
+          <in>inet.c</in>
+          <in>nametoaddr.c</in>
+          <in>optimize.c</in>
+          <in>pcap-can-linux.c</in>
+          <in>pcap-common.c</in>
+          <in>pcap-linux.c</in>
+          <in>pcap-netfilter-linux-android.c</in>
+          <in>pcap-netfilter-linux.c</in>
+          <in>pcap-usb-linux.c</in>
+          <in>pcap.c</in>
+          <in>savefile.c</in>
+          <in>scanner.c</in>
+          <in>sf-pcap-ng.c</in>
+          <in>sf-pcap.c</in>
+          <in>version.c</in>
+        </df>
+      </df>
+    </df>
+    <logicalFolder name="ExternalFiles"
+                   displayName="Important Files"
+                   projectFiles="false"
+                   kind="IMPORTANT_FILES_FOLDER">
+      <itemPath>nbproject/private/launcher.properties</itemPath>
+    </logicalFolder>
+  </logicalFolder>
+  <sourceFolderFilter>^(nbproject)$</sourceFolderFilter>
+  <sourceRootList>
+    <Elem>.</Elem>
+  </sourceRootList>
+  <projectmakefile></projectmakefile>
+  <confs>
+    <conf name="Default" type="0">
+      <toolsSet>
+        <compilerSet>default</compilerSet>
+        <dependencyChecking>false</dependencyChecking>
+        <rebuildPropChanged>false</rebuildPropChanged>
+      </toolsSet>
+      <flagsDictionary>
+        <element flagsID="0"
+                 commonFlags="-mbionic -g -g -O2 -O2 -fpic -funwind-tables -fstack-protector-strong"/>
+        <element flagsID="1"
+                 commonFlags="-mbionic -march=armv5te -mtune=xscale -g -g -Os -O2 -fpic -funwind-tables -fstack-protector"/>
+        <element flagsID="2"
+                 commonFlags="-mbionic -march=armv7-a -g -g -Os -O2 -fpic -funwind-tables -fstack-protector"/>
+        <element flagsID="3"
+                 commonFlags="-mbionic -march=mips32 -g -g -O2 -O2 -fpic -funwind-tables"/>
+        <element flagsID="4"
+                 commonFlags="-mbionic -march=mips64r6 -g -g -O2 -O2 -fpic -funwind-tables"/>
+        <element flagsID="5"
+                 commonFlags="-msse4.2 -mpopcnt -mbionic -fPIC -mtune=intel -march=x86-64 -g -g -O2 -O2 -funwind-tables -fstack-protector-strong"/>
+        <element flagsID="6"
+                 commonFlags="-mssse3 -mbionic -fPIC -mtune=intel -march=i686 -g -g -O2 -O2 -funwind-tables -fstack-protector"/>
+      </flagsDictionary>
+      <codeAssistance>
+      </codeAssistance>
+      <makefileType>
+        <makeTool>
+          <buildCommandWorkingDir>.</buildCommandWorkingDir>
+          <buildCommand>echo build</buildCommand>
+          <cleanCommand>echo clean</cleanCommand>
+          <executablePath></executablePath>
+        </makeTool>
+        <preBuild>
+          <preBuildCommandWorkingDir>.</preBuildCommandWorkingDir>
+          <preBuildCommand></preBuildCommand>
+        </preBuild>
+      </makefileType>
+      <item path="jni/dns-spoofing/Android.mk" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="jni/dns-spoofing/dns-spoof.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="jni/dns-spoofing/dns-spoof.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="jni/libpcap/bpf_dump.c" ex="false" tool="0" flavor2="2">
+        <cTool flags="0">
+          <incDir>
+            <pElem>jni/libpcap</pElem>
+            <pElem>../../../NDK/ndk/platforms/android-21/arch-arm64/usr/include/sys</pElem>
+            <pElem>jni/libpcap/pcap</pElem>
+            <pElem>../../../NDK/ndk/platforms/android-21/arch-arm64/usr/include</pElem>
+            <pElem>.</pElem>
+          </incDir>
+        </cTool>
+      </item>
+      <item path="jni/libpcap/bpf_filter.c" ex="false" tool="0" flavor2="2">
+        <cTool flags="6">
+          <incDir>
+            <pElem>jni/libpcap</pElem>
+            <pElem>../../../NDK/ndk/platforms/android-21/arch-x86/usr/include</pElem>
+            <pElem>../../../NDK/ndk/platforms/android-21/arch-x86/usr/include/asm-generic</pElem>
+            <pElem>../../../NDK/ndk/platforms/android-21/arch-x86/usr/include/linux</pElem>
+            <pElem>../../../NDK/ndk/platforms/android-21/arch-x86/usr/include/sys</pElem>
+            <pElem>jni/libpcap/pcap</pElem>
+            <pElem>../../../NDK/ndk/platforms/android-21/arch-x86/usr/include/netinet</pElem>
+            <pElem>.</pElem>
+          </incDir>
+        </cTool>
+      </item>
+      <item path="jni/libpcap/bpf_image.c" ex="false" tool="0" flavor2="2">
+        <cTool flags="6">
+          <incDir>
+            <pElem>jni/libpcap</pElem>
+            <pElem>../../../NDK/ndk/toolchains/x86-4.8/prebuilt/linux-x86_64/lib/gcc/i686-linux-android/4.8/include</pElem>
+            <pElem>../../../NDK/ndk/platforms/android-21/arch-x86/usr/include/sys</pElem>
+            <pElem>jni/libpcap/pcap</pElem>
+            <pElem>../../../NDK/ndk/platforms/android-21/arch-x86/usr/include</pElem>
+            <pElem>.</pElem>
+          </incDir>
+        </cTool>
+      </item>
+      <item path="jni/libpcap/etherent.c" ex="false" tool="0" flavor2="2">
+        <cTool flags="4">
+          <incDir>
+            <pElem>jni/libpcap</pElem>
+            <pElem>../../../NDK/ndk/toolchains/mips64el-linux-android-4.9/prebuilt/linux-x86_64/lib/gcc/mips64el-linux-android/4.9/include</pElem>
+            <pElem>../../../NDK/ndk/platforms/android-21/arch-mips64/usr/include/asm-generic</pElem>
+            <pElem>../../../NDK/ndk/platforms/android-21/arch-mips64/usr/include/sys</pElem>
+            <pElem>../../../NDK/ndk/platforms/android-21/arch-mips64/usr/include</pElem>
+            <pElem>jni/libpcap/pcap</pElem>
+            <pElem>.</pElem>
+          </incDir>
+        </cTool>
+      </item>
+      <item path="jni/libpcap/fad-gifc.c" ex="false" tool="0" flavor2="2">
+        <cTool flags="3">
+          <incDir>
+            <pElem>jni/libpcap</pElem>
+            <pElem>../../../NDK/ndk/platforms/android-21/arch-mips/usr/include/asm-generic</pElem>
+            <pElem>../../../NDK/ndk/platforms/android-21/arch-mips/usr/include/linux</pElem>
+            <pElem>../../../NDK/ndk/toolchains/mipsel-linux-android-4.8/prebuilt/linux-x86_64/lib/gcc/mipsel-linux-android/4.8/include</pElem>
+            <pElem>../../../NDK/ndk/platforms/android-21/arch-mips/usr/include/sys</pElem>
+            <pElem>../../../NDK/ndk/platforms/android-21/arch-mips/usr/include/linux/hdlc</pElem>
+            <pElem>jni/libpcap/pcap</pElem>
+            <pElem>../../../NDK/ndk/platforms/android-21/arch-mips/usr/include/netinet</pElem>
+            <pElem>../../../NDK/ndk/platforms/android-21/arch-mips/usr/include</pElem>
+            <pElem>.</pElem>
+          </incDir>
+        </cTool>
+      </item>
+      <item path="jni/libpcap/gencode.c" ex="false" tool="0" flavor2="2">
+        <cTool flags="1">
+          <incDir>
+            <pElem>jni/libpcap</pElem>
+            <pElem>../../../NDK/ndk/toolchains/arm-linux-androideabi-4.8/prebuilt/linux-x86_64/lib/gcc/arm-linux-androideabi/4.8/include</pElem>
+            <pElem>../../../NDK/ndk/platforms/android-21/arch-arm/usr/include</pElem>
+            <pElem>../../../NDK/ndk/platforms/android-21/arch-arm/usr/include/asm-generic</pElem>
+            <pElem>../../../NDK/ndk/platforms/android-21/arch-arm/usr/include/linux</pElem>
+            <pElem>../../../NDK/ndk/platforms/android-21/arch-arm/usr/include/sys</pElem>
+            <pElem>jni/libpcap/pcap</pElem>
+            <pElem>../../../NDK/ndk/platforms/android-21/arch-arm/usr/include/netinet</pElem>
+            <pElem>.</pElem>
+          </incDir>
+        </cTool>
+      </item>
+      <item path="jni/libpcap/grammar.c" ex="false" tool="0" flavor2="2">
+        <cTool flags="5">
+          <incDir>
+            <pElem>../../../NDK/ndk/toolchains/x86_64-4.9/prebuilt/linux-x86_64/lib/gcc/x86_64-linux-android/4.9/include</pElem>
+            <pElem>../../../NDK/ndk/platforms/android-21/arch-x86_64/usr/include/asm-generic</pElem>
+            <pElem>../../../NDK/ndk/platforms/android-21/arch-x86_64/usr/include/linux</pElem>
+            <pElem>../../../NDK/ndk/platforms/android-21/arch-x86_64/usr/include/sys</pElem>
+            <pElem>jni/libpcap/pcap</pElem>
+            <pElem>jni/libpcap</pElem>
+            <pElem>../../../NDK/ndk/platforms/android-21/arch-x86_64/usr/include/netinet</pElem>
+            <pElem>../../../NDK/ndk/platforms/android-21/arch-x86_64/usr/include</pElem>
+            <pElem>.</pElem>
+          </incDir>
+        </cTool>
+      </item>
+      <item path="jni/libpcap/inet.c" ex="false" tool="0" flavor2="2">
+        <cTool flags="4">
+          <incDir>
+            <pElem>jni/libpcap</pElem>
+            <pElem>../../../NDK/ndk/toolchains/mips64el-linux-android-4.9/prebuilt/linux-x86_64/lib/gcc/mips64el-linux-android/4.9/include</pElem>
+            <pElem>../../../NDK/ndk/platforms/android-21/arch-mips64/usr/include/asm-generic</pElem>
+            <pElem>../../../NDK/ndk/platforms/android-21/arch-mips64/usr/include/linux</pElem>
+            <pElem>../../../NDK/ndk/platforms/android-21/arch-mips64/usr/include/sys</pElem>
+            <pElem>../../../NDK/ndk/platforms/android-21/arch-mips64/usr/include/linux/hdlc</pElem>
+            <pElem>../../../NDK/ndk/platforms/android-21/arch-mips64/usr/include</pElem>
+            <pElem>jni/libpcap/pcap</pElem>
+            <pElem>../../../NDK/ndk/platforms/android-21/arch-mips64/usr/include/netinet</pElem>
+            <pElem>.</pElem>
+          </incDir>
+        </cTool>
+      </item>
+      <item path="jni/libpcap/nametoaddr.c" ex="false" tool="0" flavor2="2">
+        <cTool flags="5">
+          <incDir>
+            <pElem>jni/libpcap</pElem>
+            <pElem>../../../NDK/ndk/toolchains/x86_64-4.9/prebuilt/linux-x86_64/lib/gcc/x86_64-linux-android/4.9/include</pElem>
+            <pElem>../../../NDK/ndk/platforms/android-21/arch-x86_64/usr/include</pElem>
+            <pElem>../../../NDK/ndk/platforms/android-21/arch-x86_64/usr/include/asm-generic</pElem>
+            <pElem>../../../NDK/ndk/platforms/android-21/arch-x86_64/usr/include/linux</pElem>
+            <pElem>../../../NDK/ndk/platforms/android-21/arch-x86_64/usr/include/sys</pElem>
+            <pElem>jni/libpcap/pcap</pElem>
+            <pElem>../../../NDK/ndk/platforms/android-21/arch-x86_64/usr/include/netinet</pElem>
+            <pElem>.</pElem>
+          </incDir>
+        </cTool>
+      </item>
+      <item path="jni/libpcap/optimize.c" ex="false" tool="0" flavor2="2">
+        <cTool flags="6">
+          <incDir>
+            <pElem>jni/libpcap</pElem>
+            <pElem>../../../NDK/ndk/toolchains/x86-4.8/prebuilt/linux-x86_64/lib/gcc/i686-linux-android/4.8/include</pElem>
+            <pElem>../../../NDK/ndk/platforms/android-21/arch-x86/usr/include/asm-generic</pElem>
+            <pElem>../../../NDK/ndk/platforms/android-21/arch-x86/usr/include/sys</pElem>
+            <pElem>../../../NDK/ndk/platforms/android-21/arch-x86/usr/include</pElem>
+            <pElem>../../../NDK/ndk/platforms/android-21/arch-x86/usr/include/linux</pElem>
+            <pElem>jni/libpcap/pcap</pElem>
+            <pElem>.</pElem>
+          </incDir>
+        </cTool>
+      </item>
+      <item path="jni/libpcap/pcap-can-linux.c" ex="false" tool="0" flavor2="2">
+        <cTool flags="5">
+          <incDir>
+            <pElem>jni/libpcap</pElem>
+            <pElem>../../../NDK/ndk/toolchains/x86_64-4.9/prebuilt/linux-x86_64/lib/gcc/x86_64-linux-android/4.9/include</pElem>
+            <pElem>../../../NDK/ndk/platforms/android-21/arch-x86_64/usr/include</pElem>
+            <pElem>../../../NDK/ndk/platforms/android-21/arch-x86_64/usr/include/asm-generic</pElem>
+            <pElem>../../../NDK/ndk/platforms/android-21/arch-x86_64/usr/include/linux</pElem>
+            <pElem>../../../NDK/ndk/platforms/android-21/arch-x86_64/usr/include/sys</pElem>
+            <pElem>jni/libpcap/pcap</pElem>
+            <pElem>../../../NDK/ndk/platforms/android-21/arch-x86_64/usr/include/linux/hdlc</pElem>
+            <pElem>../../../NDK/ndk/platforms/android-21/arch-x86_64/usr/include/netinet</pElem>
+            <pElem>.</pElem>
+          </incDir>
+        </cTool>
+      </item>
+      <item path="jni/libpcap/pcap-common.c" ex="false" tool="0" flavor2="2">
+        <cTool flags="6">
+          <incDir>
+            <pElem>jni/libpcap</pElem>
+            <pElem>../../../NDK/ndk/platforms/android-21/arch-x86/usr/include</pElem>
+            <pElem>../../../NDK/ndk/platforms/android-21/arch-x86/usr/include/asm-generic</pElem>
+            <pElem>../../../NDK/ndk/platforms/android-21/arch-x86/usr/include/sys</pElem>
+            <pElem>../../../NDK/ndk/platforms/android-21/arch-x86/usr/include/linux</pElem>
+            <pElem>jni/libpcap/pcap</pElem>
+            <pElem>.</pElem>
+          </incDir>
+        </cTool>
+      </item>
+      <item path="jni/libpcap/pcap-linux.c" ex="false" tool="0" flavor2="2">
+        <cTool flags="0">
+          <incDir>
+            <pElem>jni/libpcap</pElem>
+            <pElem>../../../NDK/ndk/toolchains/aarch64-linux-android-4.9/prebuilt/linux-x86_64/lib/gcc/aarch64-linux-android/4.9/include</pElem>
+            <pElem>../../../NDK/ndk/platforms/android-21/arch-arm64/usr/include</pElem>
+            <pElem>../../../NDK/ndk/platforms/android-21/arch-arm64/usr/include/asm-generic</pElem>
+            <pElem>../../../NDK/ndk/platforms/android-21/arch-arm64/usr/include/linux</pElem>
+            <pElem>../../../NDK/ndk/platforms/android-21/arch-arm64/usr/include/sys</pElem>
+            <pElem>../../../NDK/ndk/platforms/android-21/arch-arm64/usr/include/linux/hdlc</pElem>
+            <pElem>jni/libpcap/pcap</pElem>
+            <pElem>../../../NDK/ndk/platforms/android-21/arch-arm64/usr/include/netinet</pElem>
+            <pElem>.</pElem>
+          </incDir>
+        </cTool>
+      </item>
+      <item path="jni/libpcap/pcap-netfilter-linux-android.c"
+            ex="false"
+            tool="0"
+            flavor2="2">
+        <cTool flags="4">
+          <incDir>
+            <pElem>jni/libpcap</pElem>
+            <pElem>../../../NDK/ndk/toolchains/mips64el-linux-android-4.9/prebuilt/linux-x86_64/lib/gcc/mips64el-linux-android/4.9/include</pElem>
+            <pElem>../../../NDK/ndk/platforms/android-21/arch-mips64/usr/include</pElem>
+            <pElem>../../../NDK/ndk/platforms/android-21/arch-mips64/usr/include/asm-generic</pElem>
+            <pElem>../../../NDK/ndk/platforms/android-21/arch-mips64/usr/include/linux</pElem>
+            <pElem>../../../NDK/ndk/platforms/android-21/arch-mips64/usr/include/sys</pElem>
+            <pElem>jni/libpcap/pcap</pElem>
+            <pElem>../../../NDK/ndk/platforms/android-21/arch-mips64/usr/include/linux/netfilter</pElem>
+            <pElem>../../../NDK/ndk/platforms/android-21/arch-mips64/usr/include/netinet</pElem>
+            <pElem>.</pElem>
+          </incDir>
+        </cTool>
+      </item>
+      <item path="jni/libpcap/pcap-netfilter-linux.c" ex="false" tool="0" flavor2="2">
+        <cTool flags="1">
+          <incDir>
+            <pElem>jni/libpcap</pElem>
+            <pElem>../../../NDK/ndk/toolchains/arm-linux-androideabi-4.8/prebuilt/linux-x86_64/lib/gcc/arm-linux-androideabi/4.8/include</pElem>
+            <pElem>../../../NDK/ndk/platforms/android-21/arch-arm/usr/include</pElem>
+            <pElem>../../../NDK/ndk/platforms/android-21/arch-arm/usr/include/asm-generic</pElem>
+            <pElem>../../../NDK/ndk/platforms/android-21/arch-arm/usr/include/linux</pElem>
+            <pElem>../../../NDK/ndk/platforms/android-21/arch-arm/usr/include/sys</pElem>
+            <pElem>jni/libpcap/pcap</pElem>
+            <pElem>../../../NDK/ndk/platforms/android-21/arch-arm/usr/include/linux/netfilter</pElem>
+            <pElem>../../../NDK/ndk/platforms/android-21/arch-arm/usr/include/netinet</pElem>
+            <pElem>.</pElem>
+          </incDir>
+        </cTool>
+      </item>
+      <item path="jni/libpcap/pcap-usb-linux.c" ex="false" tool="0" flavor2="2">
+        <cTool flags="0">
+          <incDir>
+            <pElem>jni/libpcap</pElem>
+            <pElem>../../../NDK/ndk/toolchains/aarch64-linux-android-4.9/prebuilt/linux-x86_64/lib/gcc/aarch64-linux-android/4.9/include</pElem>
+            <pElem>../../../NDK/ndk/platforms/android-21/arch-arm64/usr/include</pElem>
+            <pElem>../../../NDK/ndk/platforms/android-21/arch-arm64/usr/include/asm-generic</pElem>
+            <pElem>../../../NDK/ndk/platforms/android-21/arch-arm64/usr/include/linux</pElem>
+            <pElem>../../../NDK/ndk/platforms/android-21/arch-arm64/usr/include/sys</pElem>
+            <pElem>jni/libpcap/pcap</pElem>
+            <pElem>../../../NDK/ndk/platforms/android-21/arch-arm64/usr/include/netinet</pElem>
+            <pElem>.</pElem>
+          </incDir>
+        </cTool>
+      </item>
+      <item path="jni/libpcap/pcap.c" ex="false" tool="0" flavor2="2">
+        <cTool flags="4">
+          <incDir>
+            <pElem>jni/libpcap</pElem>
+            <pElem>../../../NDK/ndk/toolchains/mips64el-linux-android-4.9/prebuilt/linux-x86_64/lib/gcc/mips64el-linux-android/4.9/include</pElem>
+            <pElem>../../../NDK/ndk/platforms/android-21/arch-mips64/usr/include/asm-generic</pElem>
+            <pElem>../../../NDK/ndk/platforms/android-21/arch-mips64/usr/include/sys</pElem>
+            <pElem>../../../NDK/ndk/platforms/android-21/arch-mips64/usr/include</pElem>
+            <pElem>../../../NDK/ndk/platforms/android-21/arch-mips64/usr/include/linux</pElem>
+            <pElem>jni/libpcap/pcap</pElem>
+            <pElem>.</pElem>
+          </incDir>
+        </cTool>
+      </item>
+      <item path="jni/libpcap/savefile.c" ex="false" tool="0" flavor2="2">
+        <cTool flags="2">
+          <incDir>
+            <pElem>jni/libpcap</pElem>
+            <pElem>../../../NDK/ndk/toolchains/arm-linux-androideabi-4.8/prebuilt/linux-x86_64/lib/gcc/arm-linux-androideabi/4.8/include</pElem>
+            <pElem>../../../NDK/ndk/platforms/android-21/arch-arm/usr/include/asm-generic</pElem>
+            <pElem>../../../NDK/ndk/platforms/android-21/arch-arm/usr/include/sys</pElem>
+            <pElem>../../../NDK/ndk/platforms/android-21/arch-arm/usr/include</pElem>
+            <pElem>../../../NDK/ndk/platforms/android-21/arch-arm/usr/include/linux</pElem>
+            <pElem>jni/libpcap/pcap</pElem>
+            <pElem>.</pElem>
+          </incDir>
+        </cTool>
+      </item>
+      <item path="jni/libpcap/scanner.c" ex="false" tool="0" flavor2="2">
+        <cTool flags="1">
+          <incDir>
+            <pElem>../../../NDK/ndk/toolchains/arm-linux-androideabi-4.8/prebuilt/linux-x86_64/lib/gcc/arm-linux-androideabi/4.8/include</pElem>
+            <pElem>../../../NDK/ndk/platforms/android-21/arch-arm/usr/include</pElem>
+            <pElem>../../../NDK/ndk/platforms/android-21/arch-arm/usr/include/asm-generic</pElem>
+            <pElem>../../../NDK/ndk/platforms/android-21/arch-arm/usr/include/sys</pElem>
+            <pElem>jni/libpcap/pcap</pElem>
+            <pElem>jni/libpcap</pElem>
+            <pElem>.</pElem>
+          </incDir>
+        </cTool>
+      </item>
+      <item path="jni/libpcap/sf-pcap-ng.c" ex="false" tool="0" flavor2="2">
+        <cTool flags="6">
+          <incDir>
+            <pElem>jni/libpcap</pElem>
+            <pElem>../../../NDK/ndk/toolchains/x86-4.8/prebuilt/linux-x86_64/lib/gcc/i686-linux-android/4.8/include</pElem>
+            <pElem>../../../NDK/ndk/platforms/android-21/arch-x86/usr/include</pElem>
+            <pElem>../../../NDK/ndk/platforms/android-21/arch-x86/usr/include/asm-generic</pElem>
+            <pElem>../../../NDK/ndk/platforms/android-21/arch-x86/usr/include/sys</pElem>
+            <pElem>../../../NDK/ndk/platforms/android-21/arch-x86/usr/include/linux</pElem>
+            <pElem>jni/libpcap/pcap</pElem>
+            <pElem>.</pElem>
+          </incDir>
+        </cTool>
+      </item>
+      <item path="jni/libpcap/sf-pcap.c" ex="false" tool="0" flavor2="2">
+        <cTool flags="2">
+          <incDir>
+            <pElem>jni/libpcap</pElem>
+            <pElem>../../../NDK/ndk/toolchains/arm-linux-androideabi-4.8/prebuilt/linux-x86_64/lib/gcc/arm-linux-androideabi/4.8/include</pElem>
+            <pElem>../../../NDK/ndk/platforms/android-21/arch-arm/usr/include/asm-generic</pElem>
+            <pElem>../../../NDK/ndk/platforms/android-21/arch-arm/usr/include/sys</pElem>
+            <pElem>../../../NDK/ndk/platforms/android-21/arch-arm/usr/include</pElem>
+            <pElem>../../../NDK/ndk/platforms/android-21/arch-arm/usr/include/linux</pElem>
+            <pElem>jni/libpcap/pcap</pElem>
+            <pElem>.</pElem>
+          </incDir>
+        </cTool>
+      </item>
+      <item path="jni/libpcap/version.c" ex="false" tool="0" flavor2="2">
+        <cTool flags="3">
+          <incDir>
+            <pElem>jni/libpcap</pElem>
+            <pElem>.</pElem>
+          </incDir>
+        </cTool>
+      </item>
+    </conf>
+  </confs>
+</configurationDescriptor>

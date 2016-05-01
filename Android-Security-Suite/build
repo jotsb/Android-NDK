@@ -22,9 +22,9 @@ echo "$LINE"
 echo "$LINE"
 echo "$SCRIPT BUILDING NDK PACKAGE"
 echo "$LINE"
-echo "$SCRIPT ndk-build"
+echo "$SCRIPT ndk-build NDK_DEBUG=1"
 echo
-ndk-build
+ndk-build NDK_DEBUG=1
 echo
 echo
 sleep $SLEEP

@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project-private xmlns="http://www.netbeans.org/ns/project-private/1">
+    <code-assistance-data xmlns="http://www.netbeans.org/ns/make-project-private/1">
+        <code-model-enabled>true</code-model-enabled>
+    </code-assistance-data>
+    <data xmlns="http://www.netbeans.org/ns/make-project-private/1">
+        <activeConfTypeElem>0</activeConfTypeElem>
+        <activeConfIndexElem>0</activeConfIndexElem>
+    </data>
+    <editor-bookmarks xmlns="http://www.netbeans.org/ns/editor-bookmarks/2" lastBookmarkId="0"/>
+    <open-files xmlns="http://www.netbeans.org/ns/projectui-open-files/2">
+        <group>
+            <file>file:/home/jb/Documents/Android/Workspace/Android-NDK/Android-Security-Suite/jni/host-detection/detect.h</file>
+            <file>file:/home/jb/Documents/Android/Workspace/Android-NDK/Android-Security-Suite/jni/host-detection/main.c</file>
+            <file>file:/home/jb/Documents/Android/Workspace/Android-NDK/Android-Security-Suite/jni/arpspoof/arp_spoofer.c</file>
+            <file>file:/home/jb/Documents/Android/Workspace/Android-NDK/Android-Security-Suite/jni/dns-spoofing/dns-spoof.c</file>
+            <file>file:/home/jb/Documents/Android/Workspace/Android-NDK/Android-Security-Suite/jni/androdump/AndroDump.c</file>
+            <file>file:/home/jb/Documents/Android/Workspace/Android-NDK/Android-Security-Suite/jni/arpspoof/arp_spoofer.h</file>
+            <file>file:/home/jb/Documents/Android/Workspace/Android-NDK/Android-Security-Suite/jni/androdump/AndroDump.h</file>
+            <file>file:/home/jb/Documents/Android/Workspace/Android-NDK/Android-Security-Suite/jni/dns-spoofing/dns-spoof.h</file>
+        </group>
+    </open-files>
+</project-private>
