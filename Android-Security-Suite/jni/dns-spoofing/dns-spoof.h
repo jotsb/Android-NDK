@@ -164,6 +164,10 @@ extern "C" {
     };
 
     struct my_header {
+        char *interface;
+        uint8_t src_mac[ETH_ALEN]; // Mac address of the victim machine
+        uint8_t dst_mac[ETH_ALEN]; // Mac address of the Router
+        uint16_t type; // Type of protocol
         struct in_addr ip_src; // Client IP Address
         struct in_addr ip_dst; // DNS Server IP Address
         u_short src_port; // Client application source port
@@ -175,25 +179,33 @@ extern "C" {
     struct my_header* header_info; // captured header info
 
 
-    int submit_log(char *msgType, char *string);
-    int submit_log_i(char *msgType, int value);
+    int submit_log(char*, char*);
+    int submit_log_i(char*, int);
+    int create_raw_socket(int);
+    uint8_t* get_mac_addr(int, char*);
     char* get_device();
-    void* pcap_setup(char *filter);
+    void* pcap_setup(char*);
     struct my_header* init_header();
-    void pkt_callback(u_char *args, const struct pcap_pkthdr *pkt_hdr, const u_char* packet);
-    u_int16_t handle_ethernet(const struct pcap_pkthdr* pkthdr, const u_char* packet);
-    u_char* handle_IP(const struct pcap_pkthdr* pkthdr, const u_char* packet);
-    u_char* handle_UDP(const struct pcap_pkthdr* pkthdr, const u_char* packet);
-    void handle_DNS(const char* packet);
-    char* extract_dns_request(struct dns_query *dnsquery);
-    void extract_ip_from_iphdr(struct my_ip* ip);
-    struct ip build_ip_hdr();
-    struct udp_hdr build_udp_hdr();
-    struct dns_response build_dns_answer(struct dns_query *query);
-    void build_response_packet(struct dns_query *query);
-    uint16_t ipv4_checksum(uint16_t *addr, int len);
-    char * allocate_strmem(int len);
-    int* allocate_intmem(int len);
+    void pkt_callback(u_char *args, const struct pcap_pkthdr*, const u_char*);
+    u_int16_t handle_ethernet(const struct pcap_pkthdr*, const u_char*);
+    u_char* handle_IP(const struct pcap_pkthdr*, const u_char*);
+    u_char* handle_UDP(const struct pcap_pkthdr*, const u_char*);
+    void handle_DNS(const char*);
+    char* extract_dns_request(struct dns_query *);
+    void extract_ip_from_iphdr(struct my_ip*);
+    void build_ip_hdr(uint8_t*);
+    void build_udp_hdr(uint8_t*);
+    void build_dns_answer(uint8_t*, struct dns_query*);
+//    void build_ip_hdr(char*);
+//    void build_udp_hdr(char*);
+//    void build_dns_answer(char*, struct dns_query*);
+    void build_response_packet(struct dns_query*);
+//    void send_dns_answer(struct in_addr, u_short, char*, int);
+    void send_dns_answer(struct in_addr, u_short, uint8_t*, int);
+    uint16_t ipv4_checksum(uint16_t*, int);
+    char * allocate_strmem(int);
+    int* allocate_intmem(int);
+    uint8_t * allocate_ustrmem(int);
 
 #ifdef __cplusplus
 }

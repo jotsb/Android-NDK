@@ -1,1 +1,2 @@
-adb logcat | ndk-stack -sym ./obj/local/armeabi-v7a/
+clear 
+adb logcat | ndk-stack -sym ./obj/local/armeabi-v7a/ | awk '{print $7,$8,$9,$10}'
