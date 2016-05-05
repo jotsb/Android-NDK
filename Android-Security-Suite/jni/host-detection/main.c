@@ -206,7 +206,7 @@ int main(int argc, char **argv) {
                 break; // Break out of SEND Loop
             }
 
-            usleep(50000);
+            usleep(20000);
         }
 
         if (TARGET_IP == FINAL_TARGET_IP) {
